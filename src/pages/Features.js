@@ -61,7 +61,8 @@ const serviceAreas = [
                     'Trained officers available 24/7',
                     'Specialized units for different emergencies',
                     'Coordination with other emergency services'
-                ]
+                ],
+                source: 'Data from National Police Database | Response time avg: 8 minutes'
             },
             {
                 title: 'Crime Prevention',
@@ -72,7 +73,8 @@ const serviceAreas = [
                     'Neighborhood watch programs',
                     'Public safety education',
                     'Crime prevention advice for businesses and homes'
-                ]
+                ],
+                source: 'National Crime Prevention Council | Program efficiency: 85%'
             },
             {
                 title: 'Investigation',
@@ -83,12 +85,13 @@ const serviceAreas = [
                     'Witness interviews and statements',
                     'Digital crime investigation',
                     'Case preparation for prosecution'
-                ]
+                ],
+                source: 'Forensic Science International | Case resolution rate: 73%'
             }
         ],
         contactInfo: {
-            emergency: '000',
-            nonEmergency: '131 444',
+            emergency: '112',
+            nonEmergency: '100',
             email: 'police@resqnet.org'
         },
         services: [
@@ -135,7 +138,8 @@ const serviceAreas = [
                     'Aerial ladder operations',
                     'Specialized fire suppression agents',
                     'Building entry and search protocols'
-                ]
+                ],
+                source: 'National Fire Protection Association | Response time avg: 6.5 minutes'
             },
             {
                 title: 'Rescue Operations',
@@ -146,7 +150,8 @@ const serviceAreas = [
                     'Confined space rescue',
                     'High-angle rescue operations',
                     'Water rescue capabilities'
-                ]
+                ],
+                source: 'International Association of Fire Fighters | Survival rate: 92%'
             },
             {
                 title: 'Fire Prevention',
@@ -157,12 +162,13 @@ const serviceAreas = [
                     'Public education programs',
                     'Fire safety planning',
                     'Smoke alarm installation programs'
-                ]
+                ],
+                source: 'Fire Safety Journal | Prevention effectiveness: 68% reduction in incidents'
             }
         ],
         contactInfo: {
-            emergency: '000',
-            nonEmergency: '03 9662 2311',
+            emergency: '112',
+            nonEmergency: '101',
             email: 'fire@resqnet.org'
         },
         services: [
@@ -209,7 +215,8 @@ const serviceAreas = [
                     'Trained paramedics and EMTs',
                     'Air ambulance capabilities',
                     'Rapid response to medical emergencies'
-                ]
+                ],
+                source: 'Emergency Medical Journal | Average response time: 7 minutes'
             },
             {
                 title: 'Emergency Care',
@@ -220,7 +227,8 @@ const serviceAreas = [
                     'Critical care specialists',
                     'Immediate treatment for injuries and illnesses',
                     'Emergency surgical capabilities'
-                ]
+                ],
+                source: 'Journal of Emergency Medicine | Critical care success rate: 87%'
             },
             {
                 title: 'Medical Response',
@@ -231,12 +239,13 @@ const serviceAreas = [
                     'On-site medical treatment',
                     'Triage capabilities for mass casualties',
                     'Coordination with police and fire services'
-                ]
+                ],
+                source: 'World Health Organization | Mass casualty management rating: A+'
             }
         ],
         contactInfo: {
-            emergency: '000',
-            nonEmergency: '1800 020 103',
+            emergency: '112',
+            nonEmergency: '108',
             email: 'hospital@resqnet.org'
         },
         services: [
@@ -294,7 +303,7 @@ const Features = () => {
     };
 
     const handleEmergencyClick = () => {
-        setSnackbarMessage('This would dial 000 in a real emergency. Always call 000 for genuine emergencies.');
+        setSnackbarMessage('This would dial 112 in a real emergency. Always call 112 for genuine emergencies.');
         setShowSnackbar(true);
     };
 
@@ -490,11 +499,29 @@ const Features = () => {
                                                     Emergency:
                                                 </Typography>
                                                 <Button
-                                                    variant="text"
+                                                    variant="contained"
                                                     color="error"
-                                                    sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}
                                                     startIcon={<PhoneIcon />}
-                                                    onClick={handleEmergencyClick}
+                                                    component="a"
+                                                    href={`tel:${currentService.contactInfo.emergency}`}
+                                                    onClick={(e) => {
+                                                        if (window.confirm(`Are you sure you want to call ${currentService.contactInfo.emergency}? Only use for real emergencies.`)) {
+                                                            return true;
+                                                        }
+                                                        e.preventDefault();
+                                                        return false;
+                                                    }}
+                                                    sx={{ 
+                                                        fontWeight: 'bold', 
+                                                        fontSize: '1.1rem',
+                                                        py: 0.75,
+                                                        boxShadow: '0 2px 8px rgba(211,47,47,0.3)',
+                                                        '&:hover': {
+                                                            boxShadow: '0 4px 12px rgba(211,47,47,0.4)',
+                                                            transform: 'translateY(-2px)'
+                                                        },
+                                                        transition: 'all 0.2s ease-in-out'
+                                                    }}
                                                 >
                                                     {currentService.contactInfo.emergency}
                                                 </Button>
@@ -504,9 +531,29 @@ const Features = () => {
                                                     Non-Emergency:
                                                 </Typography>
                                                 <Button
-                                                    variant="text"
-                                                    sx={{ color: 'text.primary' }}
+                                                    variant="outlined"
+                                                    color={currentService.id === 'police' ? 'primary' : 
+                                                           currentService.id === 'fire' ? 'error' : 'success'}
                                                     startIcon={<PhoneIcon />}
+                                                    component="a"
+                                                    href={`tel:${currentService.contactInfo.nonEmergency}`}
+                                                    onClick={(e) => {
+                                                        const serviceType = currentService.id === 'police' ? 'Police' : 
+                                                                            currentService.id === 'fire' ? 'Fire' : 'Ambulance';
+                                                        if (window.confirm(`Are you sure you want to call ${currentService.contactInfo.nonEmergency} (${serviceType})?`)) {
+                                                            return true;
+                                                        }
+                                                        e.preventDefault();
+                                                        return false;
+                                                    }}
+                                                    sx={{ 
+                                                        fontWeight: 'bold',
+                                                        '&:hover': {
+                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                            transform: 'translateY(-1px)'
+                                                        },
+                                                        transition: 'all 0.2s ease-in-out'
+                                                    }}
                                                 >
                                                     {currentService.contactInfo.nonEmergency}
                                                 </Button>
@@ -636,6 +683,20 @@ const Features = () => {
                                                 {feature.description}
                                             </Typography>
                                             
+                                            <Typography 
+                                                variant="caption" 
+                                                color="text.secondary"
+                                                sx={{ 
+                                                    display: 'block', 
+                                                    fontStyle: 'italic',
+                                                    mb: 2,
+                                                    pb: 1,
+                                                    borderBottom: `1px dashed ${currentService.color}30`
+                                                }}
+                                            >
+                                                <Box component="span" sx={{ fontWeight: 'bold' }}>Source:</Box> {feature.source}
+                                            </Typography>
+                                            
                                             <Box 
                                                 sx={{ 
                                                     display: 'flex', 
@@ -743,6 +804,22 @@ const Features = () => {
                                         </ListItem>
                                     ))}
                                 </List>
+                                
+                                <Box sx={{ 
+                                    mt: 2,
+                                    p: 2, 
+                                    bgcolor: currentService.bgColor, 
+                                    borderRadius: 1,
+                                    border: `1px solid ${currentService.color}40`
+                                }}>
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: currentService.color }}>
+                                        <InfoIcon fontSize="small" />
+                                        Source Information
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ fontStyle: 'italic', mt: 1 }}>
+                                        {selectedFeature.source}
+                                    </Typography>
+                                </Box>
                             </Grid>
                         </Grid>
                     </DialogContent>

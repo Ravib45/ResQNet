@@ -112,6 +112,11 @@ const benefitsList = [
     "Real-time Status Updates"
 ];
 
+// Updating to more impressive background images
+const stepsBackgroundImg = 'https://images.pexels.com/photos/3760529/pexels-photo-3760529.jpeg?auto=compress&cs=tinysrgb&w=1500';
+const offerBackgroundImg = 'https://images.pexels.com/photos/6156371/pexels-photo-6156371.jpeg?auto=compress&cs=tinysrgb&w=1500';
+const servicesBackgroundImg = 'https://images.pexels.com/photos/1544946/pexels-photo-1544946.jpeg?auto=compress&cs=tinysrgb&w=1500';
+
 const Home = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -281,9 +286,33 @@ const Home = () => {
                                     my: 2,
                                 }}>
                                     <PhoneInTalkIcon sx={{ mr: 2, color: 'error.main', fontSize: 40 }} />
-                                    <Typography variant="h2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        component="a"
+                                        href="tel:112"
+                                        onClick={(e) => {
+                                            if (window.confirm('Are you sure you want to call 112? Only use for real emergencies.')) {
+                                                return true;
+                                            }
+                                            e.preventDefault();
+                                            return false;
+                                        }}
+                                        sx={{ 
+                                            fontSize: { xs: '2rem', sm: '2.5rem' },
+                                            fontWeight: 'bold',
+                                            py: 1,
+                                            px: 2,
+                                            boxShadow: '0 4px 12px rgba(211,47,47,0.3)',
+                                            '&:hover': {
+                                                boxShadow: '0 6px 16px rgba(211,47,47,0.5)',
+                                                transform: 'translateY(-2px)'
+                                            },
+                                            transition: 'all 0.2s ease-in-out'
+                                        }}
+                                    >
                                         112
-                                    </Typography>
+                                    </Button>
                                 </Box>
                                 <Divider sx={{ my: 2 }}>
                                     <Typography variant="body2" color="text.secondary">
@@ -294,21 +323,61 @@ const Home = () => {
                                     <Grid item xs={6}>
                                         <Box sx={{ bgcolor: '#f5f5f5', p: 1, borderRadius: 1 }}>
                                             <Typography variant="body2" color="text.secondary">
-                                                India Police
+                                                Police
                                             </Typography>
-                                            <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                                            <Button
+                                                color="error"
+                                                variant="outlined"
+                                                component="a"
+                                                href="tel:100"
+                                                onClick={(e) => {
+                                                    if (window.confirm('Are you sure you want to call 100 (Police)? Only use for real emergencies.')) {
+                                                        return true;
+                                                    }
+                                                    e.preventDefault();
+                                                    return false;
+                                                }}
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    mt: 0.5,
+                                                    '&:hover': {
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                                                        transform: 'translateY(-1px)'
+                                                    }
+                                                }}
+                                            >
                                                 100
-                                            </Typography>
+                                            </Button>
                                         </Box>
                                     </Grid>
                                     <Grid item xs={6}>
                                         <Box sx={{ bgcolor: '#f5f5f5', p: 1, borderRadius: 1 }}>
                                             <Typography variant="body2" color="text.secondary">
-                                                India Ambulance
+                                                Ambulance
                                             </Typography>
-                                            <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                                            <Button
+                                                color="error"
+                                                variant="outlined"
+                                                component="a"
+                                                href="tel:108"
+                                                onClick={(e) => {
+                                                    if (window.confirm('Are you sure you want to call 108 (Ambulance)? Only use for real emergencies.')) {
+                                                        return true;
+                                                    }
+                                                    e.preventDefault();
+                                                    return false;
+                                                }}
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    mt: 0.5,
+                                                    '&:hover': {
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                                                        transform: 'translateY(-1px)'
+                                                    }
+                                                }}
+                                            >
                                                 108
-                                            </Typography>
+                                            </Button>
                                         </Box>
                                     </Grid>
                                 </Grid>
@@ -322,35 +391,49 @@ const Home = () => {
             </Box>
 
             {/* Step-by-Step Process - Updated with better styling */}
-            <Box sx={{ py: 8, bgcolor: '#fff' }}>
+            <Box sx={{ 
+                py: 8, 
+                bgcolor: 'transparent',
+                backgroundImage: `linear-gradient(to right, rgba(25, 25, 112, 0.8), rgba(183, 28, 28, 0.8)), url(${stepsBackgroundImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                position: 'relative',
+                boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3)',
+                color: 'white'
+            }}>
                 <Container maxWidth="lg">
                     <Typography
                         variant="h3"
                         align="center"
                         gutterBottom
-                        sx={{ fontWeight: 'bold', mb: 5 }}
+                        sx={{ fontWeight: 'bold', mb: 5, color: 'white', textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
                         data-aos="fade-up"
                     >
-                        Emergency Response <Box component="span" sx={{ color: 'error.main' }}>Steps</Box>
+                        Emergency Response <Box component="span" sx={{ color: '#ff9e80' }}>Steps</Box>
                     </Typography>
                     <Grid container spacing={4}>
                         {emergencySteps.map((step, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index} data-aos="fade-up" data-aos-delay={index * 100}>
                                 <Paper
-                                    elevation={3}
+                                    elevation={8}
                                     sx={{
                                         p: 3,
                                         height: '100%',
-                                        borderTop: '5px solid #d32f2f',
+                                        borderTop: '5px solid #ff9e80',
                                         borderRadius: 2,
                                         textAlign: 'center',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         transition: 'transform 0.3s, box-shadow 0.3s',
+                                        backdropFilter: 'blur(10px)',
+                                        bgcolor: 'rgba(255,255,255,0.1)',
+                                        color: 'white',
                                         '&:hover': {
                                             transform: 'translateY(-10px)',
-                                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+                                            bgcolor: 'rgba(255,255,255,0.15)',
                                         },
                                     }}
                                 >
@@ -359,22 +442,23 @@ const Home = () => {
                                             width: 60,
                                             height: 60,
                                             borderRadius: '50%',
-                                            bgcolor: '#d32f2f',
-                                            color: 'white',
+                                            bgcolor: '#ff9e80',
+                                            color: '#1a237e',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             mb: 2,
                                             fontSize: 24,
                                             fontWeight: 'bold',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
                                         }}
                                     >
                                         {step.number}
                                     </Box>
-                                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'white' }}>
                                         {step.title}
                                     </Typography>
-                                    <Typography variant="body1" color="text.secondary">
+                                    <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                                         {step.description}
                                     </Typography>
                                 </Paper>
@@ -385,21 +469,31 @@ const Home = () => {
             </Box>
 
             {/* What We Offer */}
-            <Box sx={{ py: 8, bgcolor: '#f5f5f5' }}>
+            <Box sx={{ 
+                py: 8, 
+                bgcolor: 'transparent',
+                backgroundImage: `linear-gradient(to bottom right, rgba(0, 77, 64, 0.85), rgba(0, 0, 0, 0.9)), url(${offerBackgroundImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                position: 'relative',
+                boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3)',
+                color: 'white'
+            }}>
                 <Container maxWidth="lg">
                     <Typography
                         variant="h3"
                         align="center"
                         gutterBottom
-                        sx={{ fontWeight: 'bold', mb: 1 }}
+                        sx={{ fontWeight: 'bold', mb: 1, color: 'white', textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
                         data-aos="fade-up"
                     >
-                        What We <Box component="span" sx={{ color: 'error.main' }}>Offer</Box>
+                        What We <Box component="span" sx={{ color: '#ff9e80' }}>Offer</Box>
                     </Typography>
                     <Typography
                         variant="h6"
                         align="center"
-                        color="text.secondary"
+                        color="rgba(255,255,255,0.85)"
                         sx={{ mb: 6, maxWidth: 800, mx: 'auto' }}
                         data-aos="fade-up"
                         data-aos-delay="100"
@@ -418,39 +512,46 @@ const Home = () => {
                                             alignItems: 'center',
                                             mb: 2,
                                             p: 2.5,
-                                            bgcolor: 'white',
+                                            bgcolor: 'rgba(255,255,255,0.1)',
                                             borderRadius: 2,
-                                            boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                                            backdropFilter: 'blur(8px)',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
                                             transition: 'all 0.3s ease',
+                                            border: '1px solid rgba(255,255,255,0.1)',
                                             '&:hover': {
                                                 transform: 'translateX(10px)',
-                                                boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                                                boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                                                bgcolor: 'rgba(255,255,255,0.15)',
                                             }
                                         }}
                                     >
-                                        <CheckCircleIcon sx={{ color: 'success.main', mr: 2, fontSize: 28 }} />
-                                        <Typography variant="body1" sx={{ fontWeight: 'medium', fontSize: '1.05rem' }}>{benefit}</Typography>
+                                        <CheckCircleIcon sx={{ color: '#ff9e80', mr: 2, fontSize: 28 }} />
+                                        <Typography variant="body1" sx={{ fontWeight: 'medium', fontSize: '1.05rem', color: 'white' }}>{benefit}</Typography>
                                     </Box>
                                 ))}
                             </Box>
                         </Grid>
                         
                         <Grid item xs={12} md={6} data-aos="fade-left">
-                            <Paper elevation={3} sx={{ 
+                            <Paper elevation={8} sx={{ 
                                 p: 4, 
                                 borderRadius: 3,
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 transition: 'transform 0.3s ease',
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'white',
                                 '&:hover': {
                                     transform: 'translateY(-10px)',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                                    boxShadow: '0 15px 35px rgba(0,0,0,0.25)',
                                 }
                             }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                    <EngineeringIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                    <EngineeringIcon sx={{ fontSize: 40, color: '#ff9e80', mr: 2 }} />
+                                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>
                                         You're in Good Hands
                                     </Typography>
                                 </Box>
@@ -458,54 +559,57 @@ const Home = () => {
                                 <Grid container spacing={2} sx={{ mb: 3 }}>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
                                         <Box sx={{ 
-                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            bgcolor: 'rgba(0,0,0,0.2)', 
                                             p: 2, 
                                             borderRadius: 2,
                                             height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'center',
+                                            border: '1px solid rgba(255,255,255,0.05)',
                                         }}>
-                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ff9e80' }}>
                                                 4.9
                                             </Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                                                 Customer Rating
                                             </Typography>
                                         </Box>
                                     </Grid>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
                                         <Box sx={{ 
-                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            bgcolor: 'rgba(0,0,0,0.2)', 
                                             p: 2, 
                                             borderRadius: 2,
                                             height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'center',
+                                            border: '1px solid rgba(255,255,255,0.05)',
                                         }}>
-                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ff9e80' }}>
                                                 {responseCount}
                                             </Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                                                 Rescues and counting
                                             </Typography>
                                         </Box>
                                     </Grid>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
                                         <Box sx={{ 
-                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            bgcolor: 'rgba(0,0,0,0.2)', 
                                             p: 2, 
                                             borderRadius: 2,
                                             height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'center',
+                                            border: '1px solid rgba(255,255,255,0.05)',
                                         }}>
-                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#ff9e80' }}>
                                                 15<Box component="span" sx={{ fontSize: '1rem' }}>min</Box>
                                             </Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                                                 Average response time
                                             </Typography>
                                         </Box>
@@ -524,7 +628,14 @@ const Home = () => {
                                         borderRadius: 2,
                                         fontWeight: 'bold',
                                         textTransform: 'none',
-                                        fontSize: '1rem'
+                                        fontSize: '1rem',
+                                        bgcolor: '#ff9e80',
+                                        color: '#1a237e',
+                                        '&:hover': {
+                                            bgcolor: '#ffab91',
+                                            transform: 'translateY(-3px)',
+                                            boxShadow: '0 6px 15px rgba(0,0,0,0.2)',
+                                        }
                                     }}
                                 >
                                     Learn More About Our Services
@@ -536,21 +647,31 @@ const Home = () => {
             </Box>
 
             {/* Emergency Services Section */}
-            <Box sx={{ py: 8, bgcolor: '#fff' }}>
+            <Box sx={{ 
+                py: 8, 
+                bgcolor: 'transparent',
+                backgroundImage: `linear-gradient(135deg, rgba(26, 35, 126, 0.85), rgba(183, 28, 28, 0.85)), url(${servicesBackgroundImg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                position: 'relative',
+                boxShadow: 'inset 0 0 30px rgba(0,0,0,0.3)',
+                color: 'white'
+            }}>
                 <Container maxWidth="lg">
                     <Typography
                         variant="h3"
                         align="center"
                         gutterBottom
-                        sx={{ fontWeight: 'bold', mb: 1 }}
+                        sx={{ fontWeight: 'bold', mb: 1, color: 'white', textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
                         data-aos="fade-up"
                     >
-                        Emergency <Box component="span" sx={{ color: 'error.main' }}>Services</Box>
+                        Emergency <Box component="span" sx={{ color: '#ff9e80' }}>Services</Box>
                     </Typography>
                     <Typography
                         variant="h6"
                         align="center"
-                        color="text.secondary"
+                        color="rgba(255,255,255,0.85)"
                         sx={{ mb: 6, maxWidth: 800, mx: 'auto' }}
                         data-aos="fade-up"
                         data-aos-delay="100"
@@ -569,10 +690,13 @@ const Home = () => {
                                         transition: 'transform 0.3s, box-shadow 0.3s',
                                         borderRadius: 4,
                                         overflow: 'hidden',
-                                        boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+                                        background: 'rgba(255,255,255,0.1)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
                                         '&:hover': {
-                                            transform: 'translateY(-15px)',
-                                            boxShadow: '0 15px 35px rgba(0,0,0,0.15)',
+                                            transform: 'translateY(-15px) scale(1.02)',
+                                            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                                         },
                                         position: 'relative',
                                     }}
@@ -586,12 +710,12 @@ const Home = () => {
                                             width: 50,
                                             height: 50,
                                             borderRadius: '50%',
-                                            bgcolor: service.color,
+                                            bgcolor: '#ff9e80',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            color: 'white',
-                                            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                                            color: '#1a237e',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
                                         }}
                                     >
                                         {service.icon}
@@ -603,17 +727,19 @@ const Home = () => {
                                         alt={service.title}
                                         sx={{
                                             transition: 'transform 0.5s',
+                                            filter: 'brightness(0.7)',
                                             '&:hover': {
                                                 transform: 'scale(1.05)',
+                                                filter: 'brightness(0.9)',
                                             },
                                         }}
                                     />
-                                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                                        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: service.color }}>
+                                    <CardContent sx={{ flexGrow: 1, p: 3, color: 'white' }}>
+                                        <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: '#ff9e80' }}>
                                             {service.title}
                                         </Typography>
-                                        <Divider sx={{ mb: 2, borderColor: `${service.color}40` }} />
-                                        <Typography variant="body1" paragraph>
+                                        <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.2)' }} />
+                                        <Typography variant="body1" paragraph sx={{ color: 'rgba(255,255,255,0.8)' }}>
                                             {service.description}
                                         </Typography>
                                         <Button
@@ -622,11 +748,12 @@ const Home = () => {
                                             variant="contained"
                                             sx={{
                                                 mt: 1,
-                                                bgcolor: service.color,
+                                                bgcolor: '#ff9e80',
+                                                color: '#1a237e',
                                                 '&:hover': { 
-                                                    bgcolor: service.color + 'dd',
+                                                    bgcolor: '#ffab91',
                                                     transform: 'translateY(-5px)',
-                                                    boxShadow: '0 8px 15px rgba(0,0,0,0.15)'
+                                                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)'
                                                 },
                                                 borderRadius: 2,
                                                 py: 1.2,
@@ -704,9 +831,33 @@ const Home = () => {
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', my: 2 }}>
                                     <PhoneInTalkIcon sx={{ mr: 2, color: 'error.main', fontSize: 40 }} />
-                                    <Typography variant="h2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        component="a"
+                                        href="tel:112"
+                                        onClick={(e) => {
+                                            if (window.confirm('Are you sure you want to call 112? Only use for real emergencies.')) {
+                                                return true;
+                                            }
+                                            e.preventDefault();
+                                            return false;
+                                        }}
+                                        sx={{ 
+                                            fontSize: { xs: '2rem', sm: '2.5rem' },
+                                            fontWeight: 'bold',
+                                            py: 1,
+                                            px: 2,
+                                            boxShadow: '0 4px 12px rgba(211,47,47,0.3)',
+                                            '&:hover': {
+                                                boxShadow: '0 6px 16px rgba(211,47,47,0.5)',
+                                                transform: 'translateY(-2px)'
+                                            },
+                                            transition: 'all 0.2s ease-in-out'
+                                        }}
+                                    >
                                         112
-                                    </Typography>
+                                    </Button>
                                 </Box>
                                 <Divider sx={{ my: 2 }}>
                                     <Typography variant="body2" color="text.secondary">
@@ -719,9 +870,29 @@ const Home = () => {
                                             <Typography variant="body2" color="text.secondary">
                                                 Police
                                             </Typography>
-                                            <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                                            <Button
+                                                color="error"
+                                                variant="outlined"
+                                                component="a"
+                                                href="tel:100"
+                                                onClick={(e) => {
+                                                    if (window.confirm('Are you sure you want to call 100 (Police)? Only use for real emergencies.')) {
+                                                        return true;
+                                                    }
+                                                    e.preventDefault();
+                                                    return false;
+                                                }}
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    mt: 0.5,
+                                                    '&:hover': {
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                                                        transform: 'translateY(-1px)'
+                                                    }
+                                                }}
+                                            >
                                                 100
-                                            </Typography>
+                                            </Button>
                                         </Box>
                                     </Grid>
                                     <Grid item xs={4}>
@@ -729,9 +900,29 @@ const Home = () => {
                                             <Typography variant="body2" color="text.secondary">
                                                 Fire
                                             </Typography>
-                                            <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                                            <Button
+                                                color="error"
+                                                variant="outlined"
+                                                component="a"
+                                                href="tel:101"
+                                                onClick={(e) => {
+                                                    if (window.confirm('Are you sure you want to call 101 (Fire)? Only use for real emergencies.')) {
+                                                        return true;
+                                                    }
+                                                    e.preventDefault();
+                                                    return false;
+                                                }}
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    mt: 0.5,
+                                                    '&:hover': {
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                                                        transform: 'translateY(-1px)'
+                                                    }
+                                                }}
+                                            >
                                                 101
-                                            </Typography>
+                                            </Button>
                                         </Box>
                                     </Grid>
                                     <Grid item xs={4}>
@@ -739,9 +930,29 @@ const Home = () => {
                                             <Typography variant="body2" color="text.secondary">
                                                 Ambulance
                                             </Typography>
-                                            <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                                            <Button
+                                                color="error"
+                                                variant="outlined"
+                                                component="a"
+                                                href="tel:108"
+                                                onClick={(e) => {
+                                                    if (window.confirm('Are you sure you want to call 108 (Ambulance)? Only use for real emergencies.')) {
+                                                        return true;
+                                                    }
+                                                    e.preventDefault();
+                                                    return false;
+                                                }}
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    mt: 0.5,
+                                                    '&:hover': {
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                                                        transform: 'translateY(-1px)'
+                                                    }
+                                                }}
+                                            >
                                                 108
-                                            </Typography>
+                                            </Button>
                                         </Box>
                                     </Grid>
                                 </Grid>

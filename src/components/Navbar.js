@@ -39,6 +39,12 @@ import AssessmentIcon from '@mui/icons-material/Assessment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import WatchIcon from '@mui/icons-material/Watch';
+import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddIcon from '@mui/icons-material/Add';
 
 // Hide navbar on scroll down
 function HideOnScroll(props) {
@@ -61,6 +67,23 @@ const Navbar = () => {
     const isMobile = useMediaQuery('(max-width:900px)');
     const open = Boolean(anchorEl);
     
+    // Add state for wearable device menu
+    const [wearableAnchorEl, setWearableAnchorEl] = useState(null);
+    const wearableMenuOpen = Boolean(wearableAnchorEl);
+    
+    // Mock data for connected wearable devices
+    const [connectedDevices, setConnectedDevices] = useState([
+        { id: 1, name: 'Apple Watch', connected: true, batteryLevel: 78 },
+        { id: 2, name: 'Fitbit Sense', connected: false, batteryLevel: 45 }
+    ]);
+
+    // Mock health data from wearable devices
+    const [healthData, setHealthData] = useState({
+        heartRate: 72,
+        steps: 6453,
+        lastUpdated: new Date().toLocaleTimeString()
+    });
+
     // Active route tracking
     const isActive = (path) => {
         return location.pathname === path;
@@ -89,6 +112,49 @@ const Navbar = () => {
             console.error('Error signing out:', error);
         }
     };
+
+    const handleWearableMenuOpen = (event) => {
+        setWearableAnchorEl(event.currentTarget);
+    };
+
+    const handleWearableMenuClose = () => {
+        setWearableAnchorEl(null);
+    };
+
+    const handleAddWearableDevice = () => {
+        // This would open a modal to add a new device
+        handleWearableMenuClose();
+        // For now just display an alert
+        alert('This feature would open a setup wizard to connect a new wearable device');
+    };
+
+    const toggleDeviceConnection = (deviceId) => {
+        setConnectedDevices(devices => 
+            devices.map(device => 
+                device.id === deviceId ? {...device, connected: !device.connected} : device
+            )
+        );
+    };
+
+    // Function to simulate health data update
+    const updateHealthData = () => {
+        // Simulate heart rate varying by +/- 5 bpm
+        const newHeartRate = healthData.heartRate + Math.floor(Math.random() * 11) - 5;
+        // Simulate steps increasing by 50-150
+        const newSteps = healthData.steps + Math.floor(Math.random() * 101) + 50;
+        
+        setHealthData({
+            heartRate: newHeartRate,
+            steps: newSteps,
+            lastUpdated: new Date().toLocaleTimeString()
+        });
+    };
+
+    // Update health data every 30 seconds
+    useEffect(() => {
+        const interval = setInterval(updateHealthData, 30000);
+        return () => clearInterval(interval);
+    }, [healthData]);
 
     // For admin users - menu items
     const adminMenuItems = [
@@ -173,6 +239,48 @@ const Navbar = () => {
                         />
                     </ListItem>
                 ))}
+
+                {/* Add Wearable Device item in mobile menu */}
+                {isAuthenticated && !isAdmin && (
+                    <>
+                        <ListItem 
+                            button 
+                            component={Link} 
+                            to="#" 
+                            sx={{ 
+                                borderLeft: '4px solid transparent',
+                                mt: 1
+                            }}
+                        >
+                            <Box sx={{ mr: 2, color: 'text.secondary' }}>
+                                <WatchIcon />
+                            </Box>
+                            <ListItemText 
+                                primary="Wearable Devices" 
+                                secondary={`${connectedDevices.filter(d => d.connected).length} connected`}
+                            />
+                        </ListItem>
+                        
+                        {/* Health Data in Mobile */}
+                        {connectedDevices.some(d => d.connected) && (
+                            <Box sx={{ mx: 2, my: 1, p: 1.5, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 1 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Health Data
+                                </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <HeartBrokenIcon sx={{ color: 'error.main', mr: 0.5, fontSize: 18 }} />
+                                        <Typography variant="body2">{healthData.heartRate} BPM</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <DirectionsRunIcon sx={{ color: 'success.main', mr: 0.5, fontSize: 18 }} />
+                                        <Typography variant="body2">{healthData.steps.toLocaleString()} steps</Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        )}
+                    </>
+                )}
 
                 {/* Emergency button for mobile */}
                 <ListItem 
@@ -292,11 +400,10 @@ const Navbar = () => {
                             </Typography>
 
                             {/* Emergency Phone */}
-                            <Box 
-                                sx={{ 
-                                    display: { xs: 'none', sm: 'flex' }, 
+                            <Box
+                                sx={{
+                                    display: { xs: 'none', sm: 'flex' },
                                     alignItems: 'center',
-                                    mx: 2,
                                     px: 2,
                                     py: 0.5,
                                     borderRadius: 1,
@@ -305,8 +412,36 @@ const Navbar = () => {
                             >
                                 <PhoneIcon sx={{ color: 'error.main', mr: 1 }} />
                                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                    Emergency: <Box component="span" sx={{ color: 'error.main' }}>112</Box>
+                                    Emergency: 
                                 </Typography>
+                                <Button
+                                    component="a"
+                                    href="tel:112"
+                                    onClick={(e) => {
+                                        if (window.confirm('Are you sure you want to call 112? Only use for real emergencies.')) {
+                                            return true;
+                                        }
+                                        e.preventDefault();
+                                        return false;
+                                    }}
+                                    variant="contained"
+                                    color="error"
+                                    size="small"
+                                    sx={{
+                                        minWidth: 'unset',
+                                        py: 0.25,
+                                        px: 1,
+                                        ml: 0.5,
+                                        fontWeight: 'bold',
+                                        boxShadow: '0 2px 5px rgba(211,47,47,0.25)',
+                                        '&:hover': {
+                                            boxShadow: '0 4px 10px rgba(211,47,47,0.4)',
+                                            transform: 'translateY(-1px)'
+                                        }
+                                    }}
+                                >
+                                    112
+                                </Button>
                             </Box>
 
                             {/* Desktop Navigation */}
@@ -348,6 +483,149 @@ const Navbar = () => {
                                             {item.label}
                                         </Button>
                                     ))}
+                                    
+                                    {/* Add Wearable Devices Button - only show if authenticated */}
+                                    {isAuthenticated && !isAdmin && (
+                                        <Box sx={{ mx: 0.5 }}>
+                                            <Button
+                                                color="inherit"
+                                                aria-controls={wearableMenuOpen ? 'wearable-menu' : undefined}
+                                                aria-haspopup="true"
+                                                aria-expanded={wearableMenuOpen ? 'true' : undefined}
+                                                onClick={handleWearableMenuOpen}
+                                                startIcon={<WatchIcon />}
+                                                endIcon={<MoreVertIcon fontSize="small" />}
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    position: 'relative',
+                                                    '&::after': {
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '6px',
+                                                        left: '10px',
+                                                        right: '10px',
+                                                        height: '3px',
+                                                        borderRadius: '1.5px',
+                                                        bgcolor: 'transparent',
+                                                    },
+                                                    '&:hover': {
+                                                        bgcolor: 'rgba(0, 0, 0, 0.04)',
+                                                        '&::after': {
+                                                            bgcolor: 'primary.main',
+                                                            opacity: 0.5
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                Wearables
+                                            </Button>
+                                            <Menu
+                                                id="wearable-menu"
+                                                anchorEl={wearableAnchorEl}
+                                                open={wearableMenuOpen}
+                                                onClose={handleWearableMenuClose}
+                                                MenuListProps={{
+                                                    'aria-labelledby': 'wearable-button',
+                                                }}
+                                                PaperProps={{
+                                                    elevation: 3,
+                                                    sx: {
+                                                        overflow: 'visible',
+                                                        filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.2))',
+                                                        mt: 1.5,
+                                                        borderRadius: 2,
+                                                        minWidth: 280,
+                                                    },
+                                                }}
+                                                transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+                                                anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+                                            >
+                                                <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                                                    <Typography variant="subtitle1" fontWeight="bold">
+                                                        Connected Devices
+                                                    </Typography>
+                                                </Box>
+                                                
+                                                {/* Device List */}
+                                                {connectedDevices.map((device) => (
+                                                    <MenuItem key={device.id} sx={{ px: 2, py: 1.5 }}>
+                                                        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                <WatchIcon sx={{ mr: 1, color: device.connected ? 'success.main' : 'text.disabled' }} />
+                                                                <Box>
+                                                                    <Typography variant="body1">{device.name}</Typography>
+                                                                    <Typography variant="caption" color="text.secondary">
+                                                                        Battery: {device.batteryLevel}%
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Box>
+                                                            <Button 
+                                                                size="small"
+                                                                variant={device.connected ? "outlined" : "contained"}
+                                                                color={device.connected ? "success" : "primary"}
+                                                                onClick={() => toggleDeviceConnection(device.id)}
+                                                                sx={{ minWidth: 90 }}
+                                                            >
+                                                                {device.connected ? 'Connected' : 'Connect'}
+                                                            </Button>
+                                                        </Box>
+                                                    </MenuItem>
+                                                ))}
+                                                
+                                                {/* Add New Device */}
+                                                <MenuItem onClick={handleAddWearableDevice} sx={{ px: 2, py: 1 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'primary.main' }}>
+                                                        <AddIcon sx={{ mr: 1 }} />
+                                                        <Typography>Add New Device</Typography>
+                                                    </Box>
+                                                </MenuItem>
+                                                
+                                                <Divider />
+                                                
+                                                {/* Health Data */}
+                                                <Box sx={{ px: 2, py: 1.5 }}>
+                                                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                                        Health Data
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <HeartBrokenIcon sx={{ color: 'error.main', mr: 1 }} />
+                                                            <Typography variant="body2">Heart Rate: <Box component="span" fontWeight="bold">{healthData.heartRate} BPM</Box></Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <DirectionsRunIcon sx={{ color: 'success.main', mr: 1 }} />
+                                                            <Typography variant="body2">Steps Today: <Box component="span" fontWeight="bold">{healthData.steps.toLocaleString()}</Box></Typography>
+                                                        </Box>
+                                                    </Box>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                                        Last Updated: {healthData.lastUpdated}
+                                                    </Typography>
+                                                </Box>
+                                                
+                                                <Divider />
+                                                
+                                                {/* SOS Button */}
+                                                <Box sx={{ p: 2 }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="error"
+                                                        fullWidth
+                                                        size="large"
+                                                        component={Link}
+                                                        to="/report-emergency"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            borderRadius: 2,
+                                                            py: 1,
+                                                            boxShadow: '0 4px 8px rgba(211, 47, 47, 0.3)',
+                                                        }}
+                                                    >
+                                                        SOS Emergency
+                                                    </Button>
+                                                </Box>
+                                            </Menu>
+                                        </Box>
+                                    )}
                                 </Box>
                             )}
 

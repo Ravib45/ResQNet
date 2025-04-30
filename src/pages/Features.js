@@ -467,7 +467,7 @@ const Features = () => {
                                             </Button>
                                             <Button
                                                 component={RouterLink}
-                                                to="/report"
+                                                to="/report-emergency"
                                                 variant="contained"
                                                 sx={{
                                                     bgcolor: currentService.color,
@@ -557,38 +557,128 @@ const Features = () => {
 
                         <Grid container spacing={4} className="stagger-animation">
                             {currentService.features.map((feature, index) => (
-                                <Grid item xs={12} md={4} key={index}>
+                                <Grid item xs={12} md={4} key={index} data-aos="fade-up" data-aos-delay={index * 200}>
                                     <Card
                                         className="hover-lift"
                                         sx={{
                                             height: '100%',
-                                            border: `1px solid ${currentService.color}16`,
+                                            borderRadius: 3,
+                                            overflow: 'hidden',
+                                            boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                                            transition: 'all 0.3s ease-in-out',
+                                            position: 'relative',
                                             '&:hover': {
-                                                borderColor: currentService.color
+                                                transform: 'translateY(-12px)',
+                                                boxShadow: `0 14px 28px rgba(0,0,0,0.15), 0 0 0 3px ${currentService.color}50`
+                                            },
+                                            '&:after': {
+                                                content: '""',
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: '4px',
+                                                backgroundColor: currentService.color,
                                             }
                                         }}
                                     >
-                                        <CardMedia
-                                            component="img"
-                                            height="200"
-                                            image={feature.image}
-                                            alt={feature.title}
-                                        />
-                                        <CardContent>
-                                            <Typography variant="h5" component="h3" gutterBottom>
+                                        <Box sx={{ position: 'relative' }}>
+                                            <CardMedia
+                                                component="img"
+                                                height="220"
+                                                image={feature.image}
+                                                alt={feature.title}
+                                                sx={{
+                                                    transition: 'transform 0.3s ease',
+                                                    '&:hover': {
+                                                        transform: 'scale(1.05)'
+                                                    }
+                                                }}
+                                            />
+                                            <Box 
+                                                sx={{ 
+                                                    position: 'absolute', 
+                                                    top: 0, 
+                                                    left: 0, 
+                                                    bgcolor: 'rgba(0,0,0,0.5)',
+                                                    color: 'white',
+                                                    px: 2,
+                                                    py: 1,
+                                                    borderRadius: '0 0 12px 0',
+                                                    boxShadow: '0 3px 6px rgba(0,0,0,0.1)'
+                                                }}
+                                            >
+                                                {index+1}
+                                            </Box>
+                                        </Box>
+                                        <CardContent sx={{ p: 3 }}>
+                                            <Typography 
+                                                variant="h5" 
+                                                component="h3" 
+                                                gutterBottom
+                                                sx={{ 
+                                                    fontWeight: 'bold',
+                                                    color: currentService.color,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1
+                                                }}
+                                            >
                                                 {feature.title}
                                             </Typography>
-                                            <Typography color="textSecondary">
+                                            
+                                            <Divider sx={{ my: 1.5, borderColor: `${currentService.color}30` }} />
+                                            
+                                            <Typography 
+                                                color="text.secondary"
+                                                sx={{ mb: 2 }}
+                                            >
                                                 {feature.description}
                                             </Typography>
-                                            <Button
-                                                variant="text"
-                                                color="primary"
-                                                onClick={() => handleLearnMore(feature)}
-                                                sx={{ mt: 2 }}
+                                            
+                                            <Box 
+                                                sx={{ 
+                                                    display: 'flex', 
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    mt: 2
+                                                }}
                                             >
-                                                Learn More
-                                            </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => handleLearnMore(feature)}
+                                                    sx={{ 
+                                                        borderRadius: 2,
+                                                        bgcolor: currentService.color,
+                                                        '&:hover': {
+                                                            bgcolor: `${currentService.color}dd`
+                                                        },
+                                                        px: 2
+                                                    }}
+                                                >
+                                                    Learn More
+                                                </Button>
+                                                
+                                                <Box 
+                                                    sx={{ 
+                                                        width: 42, 
+                                                        height: 42, 
+                                                        borderRadius: '50%',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        bgcolor: `${currentService.color}15`,
+                                                        color: currentService.color
+                                                    }}
+                                                >
+                                                    {currentService.id === 'police' ? 
+                                                        <LocalPoliceIcon /> : 
+                                                        currentService.id === 'fire' ? 
+                                                        <FireTruckIcon /> : 
+                                                        <LocalHospitalIcon />
+                                                    }
+                                                </Box>
+                                            </Box>
                                         </CardContent>
                                     </Card>
                                 </Grid>
@@ -598,7 +688,7 @@ const Features = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
                             <Button
                                 component={RouterLink}
-                                to="/report"
+                                to="/report-emergency"
                                 variant="contained"
                                 size="large"
                                 sx={{
@@ -660,7 +750,7 @@ const Features = () => {
                         <Button onClick={() => setDialogOpen(false)}>Close</Button>
                         <Button
                             component={RouterLink}
-                            to="/report"
+                            to="/report-emergency"
                             variant="contained"
                             sx={{ bgcolor: currentService.color }}
                         >
@@ -722,7 +812,7 @@ const Features = () => {
                         <Button onClick={() => setShowAllServices(false)}>Close</Button>
                         <Button
                             component={RouterLink}
-                            to="/report"
+                            to="/report-emergency"
                             variant="contained"
                             sx={{
                                 ml: 2,

@@ -17,6 +17,8 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminHomePage from './pages/AdminHomePage';
 import CompletedReportsPage from './pages/CompletedReportsPage';
+import AIEmergencyAssessmentPage from './pages/AIEmergencyAssessmentPage';
+import WearableDevices from './pages/WearableDevices';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, PublicOnlyRoute, AdminRoute } from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
@@ -218,6 +220,22 @@ function App() {
                             element={
                                 <ProtectedRoute>
                                     <EmergencyReport />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/wearable-devices"
+                            element={
+                                <ProtectedRoute>
+                                    <WearableDevices />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/ai-emergency-assessment"
+                            element={
+                                <ProtectedRoute>
+                                    <AIEmergencyAssessmentPage />
                                 </ProtectedRoute>
                             }
                         />

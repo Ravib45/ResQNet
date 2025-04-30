@@ -19,7 +19,8 @@ import {
     useScrollTrigger,
     Slide,
     Fade,
-    Badge
+    Badge,
+    Tooltip
 } from '@mui/material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -45,6 +46,10 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+
+// Components
+import AIEmergencyAssessment from './AIEmergencyAssessment';
 
 // Hide navbar on scroll down
 function HideOnScroll(props) {
@@ -70,6 +75,9 @@ const Navbar = () => {
     // Add state for wearable device menu
     const [wearableAnchorEl, setWearableAnchorEl] = useState(null);
     const wearableMenuOpen = Boolean(wearableAnchorEl);
+    
+    // Add state for AI Chatbot
+    const [chatbotOpen, setChatbotOpen] = useState(false);
     
     // Mock data for connected wearable devices
     const [connectedDevices, setConnectedDevices] = useState([
@@ -156,6 +164,16 @@ const Navbar = () => {
         return () => clearInterval(interval);
     }, [healthData]);
 
+    // Handle opening chatbot
+    const handleOpenChatbot = () => {
+        setChatbotOpen(true);
+    };
+
+    // Handle closing chatbot
+    const handleCloseChatbot = () => {
+        setChatbotOpen(false);
+    };
+
     // For admin users - menu items
     const adminMenuItems = [
         { label: 'Home', path: '/admin/home', icon: <HomeIcon /> },
@@ -239,6 +257,35 @@ const Navbar = () => {
                         />
                     </ListItem>
                 ))}
+
+                {/* Add AI Assessment button in mobile menu */}
+                {!isAdmin && (
+                    <ListItem 
+                        button
+                        onClick={handleOpenChatbot}
+                        sx={{
+                            bgcolor: 'rgba(25, 118, 210, 0.08)',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main',
+                            mt: 1,
+                            '&:hover': {
+                                bgcolor: 'rgba(25, 118, 210, 0.12)',
+                            }
+                        }}
+                    >
+                        <Box sx={{ mr: 2, color: 'primary.main' }}>
+                            <SmartToyIcon />
+                        </Box>
+                        <ListItemText 
+                            primary="AI Emergency Assistant" 
+                            primaryTypographyProps={{ 
+                                fontWeight: 'medium',
+                                color: 'primary.main'
+                            }}
+                            secondary="Get emergency assessment"
+                        />
+                    </ListItem>
+                )}
 
                 {/* Add Wearable Device item in mobile menu */}
                 {isAuthenticated && !isAdmin && (
@@ -483,6 +530,43 @@ const Navbar = () => {
                                             {item.label}
                                         </Button>
                                     ))}
+                                    
+                                    {/* AI Assessment Button - show for all users except admins */}
+                                    {!isAdmin && (
+                                        <Tooltip title="AI Emergency Assessment">
+                                            <Button
+                                                color="primary"
+                                                onClick={handleOpenChatbot}
+                                                startIcon={<SmartToyIcon />}
+                                                sx={{
+                                                    mx: 0.5,
+                                                    px: 2,
+                                                    py: 1,
+                                                    borderRadius: 1,
+                                                    position: 'relative',
+                                                    '&::after': {
+                                                        content: '""',
+                                                        position: 'absolute',
+                                                        bottom: '6px',
+                                                        left: '10px',
+                                                        right: '10px',
+                                                        height: '3px',
+                                                        borderRadius: '1.5px',
+                                                        bgcolor: 'transparent',
+                                                    },
+                                                    '&:hover': {
+                                                        bgcolor: 'rgba(0, 0, 0, 0.04)',
+                                                        '&::after': {
+                                                            bgcolor: 'primary.main',
+                                                            opacity: 0.5
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                AI Assistant
+                                            </Button>
+                                        </Tooltip>
+                                    )}
                                     
                                     {/* Add Wearable Devices Button - only show if authenticated */}
                                     {isAuthenticated && !isAdmin && (
@@ -790,6 +874,12 @@ const Navbar = () => {
             >
                 {drawer}
             </Drawer>
+            
+            {/* AI Emergency Assessment Chatbot */}
+            <AIEmergencyAssessment 
+                open={chatbotOpen} 
+                onClose={handleCloseChatbot} 
+            />
             
             {/* Toolbar spacer */}
             <Toolbar />

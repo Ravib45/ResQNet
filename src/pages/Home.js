@@ -39,8 +39,8 @@ import EngineeringIcon from '@mui/icons-material/Engineering';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
-// Emergency scene with first responders
-const heroBg = 'https://images.pexels.com/photos/923681/pexels-photo-923681.jpeg?auto=compress&cs=tinysrgb&w=1500';
+// Emergency scene with first responders - updated with better background
+const heroBg = 'https://images.pexels.com/photos/4506226/pexels-photo-4506226.jpeg?auto=compress&cs=tinysrgb&w=1500';
 
 // Emergency services images
 const policeImg = 'https://images.pexels.com/photos/1295138/pexels-photo-1295138.jpeg?auto=compress&cs=tinysrgb&w=800';
@@ -181,12 +181,12 @@ const Home = () => {
 
     return (
         <Box sx={{ overflow: 'hidden' }}>
-            {/* Hero Section */}
+            {/* Hero Section - Updated to match Wrong Fuel Rescue style */}
             <Box
                 sx={{
                     position: 'relative',
-                    minHeight: '75vh',
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(${heroBg})`,
+                    minHeight: '90vh',
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${heroBg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     display: 'flex',
@@ -198,19 +198,20 @@ const Home = () => {
             >
                 <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
                     <Grid container spacing={4} alignItems="center">
-                        <Grid item xs={12} md={8}>
+                        <Grid item xs={12} md={7}>
                             <Typography
                                 variant="h1"
                                 sx={{
                                     color: 'white',
-                                    fontWeight: 'bold',
+                                    fontWeight: '900',
                                     mb: 2,
-                                    fontSize: isMobile ? '2.5rem' : '4rem',
+                                    fontSize: isMobile ? '2.75rem' : '4.5rem',
                                     textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                                    lineHeight: 1.1,
                                 }}
                                 data-aos="fade-right"
                             >
-                                Need Emergency Help?
+                                Need <Box component="span" sx={{ color: 'error.main' }}>Emergency</Box> Help?
                             </Typography>
                             <Typography
                                 variant="h5"
@@ -219,11 +220,13 @@ const Home = () => {
                                     mb: 4,
                                     fontSize: isMobile ? '1.2rem' : '1.5rem',
                                     textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                    opacity: 0.9,
+                                    maxWidth: '90%',
                                 }}
                                 data-aos="fade-right"
                                 data-aos-delay="200"
                             >
-                                Don't worry, we can help! ResQNet connects you with emergency services fast.
+                                Don't panic, we can help! ResQNet connects you with emergency services fast.
                             </Typography>
                             <Button
                                 component={Link}
@@ -232,13 +235,18 @@ const Home = () => {
                                 size="large"
                                 color="error"
                                 sx={{
-                                    py: 2,
+                                    py: 2.5,
                                     px: 5,
                                     fontSize: '1.25rem',
                                     fontWeight: 'bold',
                                     borderRadius: 2,
-                                    boxShadow: '0 4px 15px rgba(211, 47, 47, 0.3)',
+                                    boxShadow: '0 4px 15px rgba(211, 47, 47, 0.4)',
                                     mb: 3,
+                                    textTransform: 'uppercase',
+                                    '&:hover': {
+                                        backgroundColor: '#c62828',
+                                        boxShadow: '0 6px 20px rgba(211, 47, 47, 0.6)',
+                                    }
                                 }}
                                 data-aos="zoom-in"
                                 data-aos-delay="400"
@@ -246,7 +254,7 @@ const Home = () => {
                                 Report Emergency Now
                             </Button>
                         </Grid>
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} md={5}>
                             <Paper 
                                 elevation={8} 
                                 sx={{ 
@@ -255,6 +263,11 @@ const Home = () => {
                                     borderRadius: 3,
                                     border: '1px solid rgba(255,255,255,0.2)',
                                     textAlign: 'center',
+                                    transform: 'translateY(0)',
+                                    transition: 'transform 0.3s ease-in-out',
+                                    '&:hover': {
+                                        transform: 'translateY(-10px)',
+                                    }
                                 }}
                                 data-aos="fade-left"
                             >
@@ -300,7 +313,7 @@ const Home = () => {
                                     </Grid>
                                 </Grid>
                                 <Alert severity="info" sx={{ mt: 2 }}>
-                                    For life-threatening emergencies, call 000 directly. Use ResQNet for all other emergency assistance.
+                                    For life-threatening emergencies, call 112 directly. Use ResQNet for all other emergency assistance.
                                 </Alert>
                             </Paper>
                         </Grid>
@@ -308,9 +321,18 @@ const Home = () => {
                 </Container>
             </Box>
 
-            {/* Step-by-Step Process */}
+            {/* Step-by-Step Process - Updated with better styling */}
             <Box sx={{ py: 8, bgcolor: '#fff' }}>
                 <Container maxWidth="lg">
+                    <Typography
+                        variant="h3"
+                        align="center"
+                        gutterBottom
+                        sx={{ fontWeight: 'bold', mb: 5 }}
+                        data-aos="fade-up"
+                    >
+                        Emergency Response <Box component="span" sx={{ color: 'error.main' }}>Steps</Box>
+                    </Typography>
                     <Grid container spacing={4}>
                         {emergencySteps.map((step, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index} data-aos="fade-up" data-aos-delay={index * 100}>
@@ -325,9 +347,10 @@ const Home = () => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
-                                        transition: 'transform 0.3s',
+                                        transition: 'transform 0.3s, box-shadow 0.3s',
                                         '&:hover': {
                                             transform: 'translateY(-10px)',
+                                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
                                         },
                                     }}
                                 >
@@ -371,7 +394,7 @@ const Home = () => {
                         sx={{ fontWeight: 'bold', mb: 1 }}
                         data-aos="fade-up"
                     >
-                        What We Offer
+                        What We <Box component="span" sx={{ color: 'error.main' }}>Offer</Box>
                     </Typography>
                     <Typography
                         variant="h6"
@@ -381,7 +404,7 @@ const Home = () => {
                         data-aos="fade-up"
                         data-aos-delay="100"
                     >
-                        ResQNet is Australia's leading emergency response platform, helping thousands of people each year get the assistance they need quickly and efficiently.
+                        ResQNet is India's leading emergency response platform, helping thousands of people each year get the assistance they need quickly and efficiently.
                     </Typography>
 
                     <Grid container spacing={4}>
@@ -394,21 +417,37 @@ const Home = () => {
                                             display: 'flex', 
                                             alignItems: 'center',
                                             mb: 2,
-                                            p: 2,
+                                            p: 2.5,
                                             bgcolor: 'white',
                                             borderRadius: 2,
                                             boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateX(10px)',
+                                                boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                                            }
                                         }}
                                     >
-                                        <CheckCircleIcon sx={{ color: 'success.main', mr: 2 }} />
-                                        <Typography variant="body1">{benefit}</Typography>
+                                        <CheckCircleIcon sx={{ color: 'success.main', mr: 2, fontSize: 28 }} />
+                                        <Typography variant="body1" sx={{ fontWeight: 'medium', fontSize: '1.05rem' }}>{benefit}</Typography>
                                     </Box>
                                 ))}
                             </Box>
                         </Grid>
                         
                         <Grid item xs={12} md={6} data-aos="fade-left">
-                            <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+                            <Paper elevation={3} sx={{ 
+                                p: 4, 
+                                borderRadius: 3,
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-10px)',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                                }
+                            }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                     <EngineeringIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
                                     <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -416,30 +455,60 @@ const Home = () => {
                                     </Typography>
                                 </Box>
                                 
-                                <Grid container spacing={2} sx={{ mb: 2 }}>
+                                <Grid container spacing={2} sx={{ mb: 3 }}>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                                            4.9
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Google Reviews
-                                        </Typography>
+                                        <Box sx={{ 
+                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            p: 2, 
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                                4.9
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Customer Rating
+                                            </Typography>
+                                        </Box>
                                     </Grid>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                                            {responseCount}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Rescues and counting
-                                        </Typography>
+                                        <Box sx={{ 
+                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            p: 2, 
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                                {responseCount}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Rescues and counting
+                                            </Typography>
+                                        </Box>
                                     </Grid>
                                     <Grid item xs={4} sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                                            15min
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Average response time
-                                        </Typography>
+                                        <Box sx={{ 
+                                            bgcolor: 'rgba(0,0,0,0.03)', 
+                                            p: 2, 
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                        }}>
+                                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                                                15<Box component="span" sx={{ fontSize: '1rem' }}>min</Box>
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Average response time
+                                            </Typography>
+                                        </Box>
                                     </Grid>
                                 </Grid>
                                 
@@ -449,7 +518,14 @@ const Home = () => {
                                     variant="contained"
                                     fullWidth
                                     size="large"
-                                    sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
+                                    sx={{ 
+                                        mt: 'auto', 
+                                        py: 1.5, 
+                                        borderRadius: 2,
+                                        fontWeight: 'bold',
+                                        textTransform: 'none',
+                                        fontSize: '1rem'
+                                    }}
                                 >
                                     Learn More About Our Services
                                 </Button>
@@ -469,7 +545,7 @@ const Home = () => {
                         sx={{ fontWeight: 'bold', mb: 1 }}
                         data-aos="fade-up"
                     >
-                        Emergency Services
+                        Emergency <Box component="span" sx={{ color: 'error.main' }}>Services</Box>
                     </Typography>
                     <Typography
                         variant="h6"
@@ -495,8 +571,8 @@ const Home = () => {
                                         overflow: 'hidden',
                                         boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
                                         '&:hover': {
-                                            transform: 'translateY(-10px)',
-                                            boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                                            transform: 'translateY(-15px)',
+                                            boxShadow: '0 15px 35px rgba(0,0,0,0.15)',
                                         },
                                         position: 'relative',
                                     }}
@@ -547,8 +623,15 @@ const Home = () => {
                                             sx={{
                                                 mt: 1,
                                                 bgcolor: service.color,
-                                                '&:hover': { bgcolor: service.color + 'dd' },
+                                                '&:hover': { 
+                                                    bgcolor: service.color + 'dd',
+                                                    transform: 'translateY(-5px)',
+                                                    boxShadow: '0 8px 15px rgba(0,0,0,0.15)'
+                                                },
                                                 borderRadius: 2,
+                                                py: 1.2,
+                                                fontWeight: 'bold',
+                                                transition: 'all 0.3s ease',
                                             }}
                                             endIcon={<ArrowForwardIcon />}
                                         >
@@ -564,7 +647,7 @@ const Home = () => {
 
             {/* Call to Action */}
             <Box sx={{ 
-                py: 8, 
+                py: 8,
                 backgroundImage: 'linear-gradient(135deg, #1a237e 0%, #b71c1c 100%)',
                 color: 'white',
             }}>
@@ -583,16 +666,20 @@ const Home = () => {
                                 variant="contained"
                                 size="large"
                                 sx={{
-                                    py: 2,
+                                    py: 2.5,
                                     px: 5,
                                     fontSize: '1.2rem',
                                     fontWeight: 'bold',
                                     bgcolor: 'white',
                                     color: 'primary.main',
+                                    textTransform: 'uppercase',
                                     '&:hover': {
                                         bgcolor: 'rgba(255,255,255,0.9)',
+                                        transform: 'translateY(-5px)',
                                     },
                                     borderRadius: 2,
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
                                 }}
                             >
                                 Report Emergency
@@ -601,10 +688,15 @@ const Home = () => {
                         <Grid item xs={12} md={5} data-aos="fade-left">
                             <Paper 
                                 elevation={6} 
-                                sx={{ 
+                                sx={{
                                     p: 4, 
                                     borderRadius: 3,
                                     textAlign: 'center',
+                                    transform: 'translateY(0)',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'translateY(-10px)',
+                                    },
                                 }}
                             >
                                 <Typography variant="h6" gutterBottom color="error" sx={{ fontWeight: 'bold' }}>
@@ -613,7 +705,7 @@ const Home = () => {
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', my: 2 }}>
                                     <PhoneInTalkIcon sx={{ mr: 2, color: 'error.main', fontSize: 40 }} />
                                     <Typography variant="h2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-                                        000
+                                        112
                                     </Typography>
                                 </Box>
                                 <Divider sx={{ my: 2 }}>
@@ -653,7 +745,7 @@ const Home = () => {
                                         </Box>
                                     </Grid>
                                 </Grid>
-                                <Typography variant="body1" sx={{ mt: 2, mb: 3 }}>
+                                <Typography variant="body1" sx={{ mt: 2, mb: 3, fontWeight: 'medium' }}>
                                     Remember: For life-threatening emergencies, always call emergency services directly.
                                 </Typography>
                                 <Button
@@ -661,7 +753,17 @@ const Home = () => {
                                     to="/features"
                                     variant="outlined"
                                     fullWidth
-                                    sx={{ borderRadius: 2 }}
+                                    sx={{ 
+                                        borderRadius: 2, 
+                                        py: 1.5,
+                                        borderColor: 'primary.main',
+                                        color: 'primary.main',
+                                        fontWeight: 'bold',
+                                        '&:hover': {
+                                            borderColor: 'primary.dark',
+                                            bgcolor: 'rgba(0,0,0,0.04)',
+                                        }
+                                    }}
                                 >
                                     Learn More About Our Services
                                 </Button>

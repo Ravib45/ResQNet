@@ -24,6 +24,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loginType, setLoginType] = useState('user'); // Just for UI, doesn't affect functionality
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -73,6 +74,18 @@ const Login = () => {
         }
     };
 
+    // Helper function for admin login hint
+    const handleAdminSelect = () => {
+        setLoginType('admin');
+        setEmail('');
+    };
+
+    // Helper function for user login
+    const handleUserSelect = () => {
+        setLoginType('user');
+        setEmail('');
+    };
+
     return (
         <Box sx={{
             pt: 10,
@@ -83,12 +96,81 @@ const Login = () => {
             alignItems: 'center',
         }}>
             <Container maxWidth="sm">
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.95)' }} data-aos="fade-up">
-                    <Typography variant="h4" align="center" fontWeight="bold" gutterBottom data-aos="fade-down">
-                        Welcome Back
-                    </Typography>
+                <Paper 
+                    elevation={6} 
+                    sx={{ 
+                        p: 4, 
+                        borderRadius: 3, 
+                        bgcolor: 'rgba(255,255,255,0.97)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                        overflow: 'hidden'
+                    }} 
+                    data-aos="fade-up"
+                >
+                    <Box sx={{ position: 'relative', mb: 4 }}>
+                        <Typography variant="h4" align="center" fontWeight="bold" gutterBottom data-aos="fade-down">
+                            Welcome Back
+                        </Typography>
+                        <Divider sx={{ mb: 2 }} />
+                    </Box>
 
-                    <Divider sx={{ mb: 3 }} />
+                    {/* Login Type Options - Tabs Style */}
+                    <Box 
+                        sx={{ 
+                            display: 'flex', 
+                            borderRadius: 2, 
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            mb: 3,
+                            overflow: 'hidden'
+                        }}
+                    >
+                        <Box 
+                            onClick={handleUserSelect}
+                            sx={{ 
+                                flex: 1, 
+                                p: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                bgcolor: loginType === 'user' ? 'primary.main' : 'background.paper',
+                                color: loginType === 'user' ? 'white' : 'text.primary',
+                                borderBottom: loginType === 'user' ? '3px solid #1565c0' : '3px solid transparent',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    bgcolor: loginType === 'user' ? 'primary.main' : 'rgba(0,0,0,0.04)',
+                                }
+                            }}
+                        >
+                            <PersonIcon sx={{ fontSize: 32, mb: 1 }} />
+                            <Typography variant="subtitle1" fontWeight="bold">
+                                User Login
+                            </Typography>
+                        </Box>
+                        <Box 
+                            onClick={handleAdminSelect}
+                            sx={{ 
+                                flex: 1, 
+                                p: 2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                bgcolor: loginType === 'admin' ? 'primary.main' : 'background.paper',
+                                color: loginType === 'admin' ? 'white' : 'text.primary',
+                                borderBottom: loginType === 'admin' ? '3px solid #1565c0' : '3px solid transparent',
+                                transition: 'all 0.3s ease',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    bgcolor: loginType === 'admin' ? 'primary.main' : 'rgba(0,0,0,0.04)',
+                                }
+                            }}
+                        >
+                            <LockIcon sx={{ fontSize: 32, mb: 1 }} />
+                            <Typography variant="subtitle1" fontWeight="bold">
+                                Admin Login
+                            </Typography>
+                        </Box>
+                    </Box>
 
                     {/* Standard Login Form */}
                     <form onSubmit={handleLogin}>
@@ -107,6 +189,7 @@ const Login = () => {
                             required
                             type="email"
                             margin="normal"
+                            placeholder={loginType === 'admin' ? "Enter Admin Email" : "Enter Your Email"}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -143,24 +226,29 @@ const Login = () => {
                             fullWidth
                             sx={{
                                 mt: 3,
-                                py: 1.2,
+                                py: 1.5,
                                 borderRadius: 2,
-                                bgcolor: 'primary.main'
+                                bgcolor: 'primary.main',
+                                fontWeight: 'bold',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                                '&:hover': {
+                                    boxShadow: '0 6px 15px rgba(0,0,0,0.2)',
+                                }
                             }}
                             data-aos="fade-up"
                             disabled={loading}
                         >
-                            {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+                            {loading ? <CircularProgress size={24} color="inherit" /> : "LOGIN"}
                         </Button>
 
-                        <Box textAlign="center" mt={2} data-aos="fade-up">
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                        <Box textAlign="center" mt={3} data-aos="fade-up">
+                            <Typography variant="body2" color="text.secondary">
                                 Don't have an account?{' '}
                                 <Link
                                     component="button"
                                     variant="body2"
                                     onClick={() => navigate('/register')}
-                                    sx={{ fontWeight: 'bold' }}
+                                    sx={{ fontWeight: 'bold', color: 'primary.main' }}
                                 >
                                     Register
                                 </Link>

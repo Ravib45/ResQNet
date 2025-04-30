@@ -1,0 +1,44 @@
+.leaflet-container {
+    width: 100%;
+    height: 100%;
+}
+
+.leaflet-control-container .leaflet-routing-container-hide {
+    display: none;
+}
+
+.map-controls {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.popup-content {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.popup-location {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.popup-coordinates {
+    font-size: 12px;
+    color: #666;
+}
+
+.pin-instruction {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}

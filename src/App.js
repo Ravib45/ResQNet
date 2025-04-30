@@ -15,6 +15,8 @@ import Profile from './pages/Profile';
 import AdminPage from './pages/AdminPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminHomePage from './pages/AdminHomePage';
+import CompletedReportsPage from './pages/CompletedReportsPage';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, PublicOnlyRoute, AdminRoute } from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
@@ -91,8 +93,8 @@ const RootRedirect = () => {
     if (isAuthenticated) {
         // Check if user is admin
         if (isAdmin || userRole === 'admin') {
-            console.log("Root redirect: Detected admin user, redirecting to admin page");
-            window.location.href = '/admin';
+            console.log("Root redirect: Detected admin user, redirecting to admin home page");
+            window.location.href = '/admin/home';
             return null;
         }
         // For regular users
@@ -139,6 +141,22 @@ function App() {
                             element={
                                 <AdminRoute>
                                     <AdminDashboardPage />
+                                </AdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/home"
+                            element={
+                                <AdminRoute>
+                                    <AdminHomePage />
+                                </AdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/completed"
+                            element={
+                                <AdminRoute>
+                                    <CompletedReportsPage />
                                 </AdminRoute>
                             }
                         />

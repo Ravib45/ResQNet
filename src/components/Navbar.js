@@ -42,7 +42,9 @@ const Navbar = () => {
 
     // For admin users - minimal menu items
     const adminMenuItems = [
+        { label: 'Home', path: '/admin/home', protected: true },
         { label: 'Reports', path: '/admin', protected: true },
+        { label: 'Completed', path: '/admin/completed', protected: true },
         { label: 'Users', path: '/admin/users', protected: true },
         { label: 'Dashboard', path: '/admin/dashboard', protected: true },
     ];

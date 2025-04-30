@@ -14,12 +14,29 @@ service cloud.firestore {
         && data.coordinates.lng is number
         && data.timestamp is timestamp;
     }
+    
+    // Function to check if only status-related fields are being updated
+    function isStatusUpdate() {
+      let incomingData = request.resource.data;
+      let existingData = resource.data;
+      
+      // Allow only status and completedAt to be modified
+      let unchangedFields = existingData.keys().removeAll(['status', 'completedAt']);
+      let allUnchanged = unchangedFields.hasAll(incomingData.keys().removeAll(['status', 'completedAt'])) &&
+                         unchangedFields.size() == incomingData.keys().removeAll(['status', 'completedAt']).size();
+      
+      // Check that all values except status and completedAt are unchanged
+      return allUnchanged && 
+             incomingData.keys().hasAll(['status']) &&
+             (incomingData.status is string &&
+             incomingData.status in ['pending', 'in-progress', 'completed']);
+    }
 
     // Allow read/write access to emergency reports with validation
     match /emergencyReports/{reportId} {
       allow read: if true;  // Anyone can read emergency reports
       allow create: if isValidEmergencyReport();
-      allow update: if false;  // Reports cannot be modified once submitted
+      allow update: if isStatusUpdate();  // Allow status updates
       allow delete: if false;  // Reports cannot be deleted
     }
 

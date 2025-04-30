@@ -5,9 +5,11 @@ import {
   Card, CardContent, Grid, Button, Dialog, DialogActions,
   DialogContent, DialogTitle, Snackbar, Alert, Stack
 } from '@mui/material';
-import { collection, query, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+const LOCAL_STORAGE_KEY = 'resqnet_completed_reports';
 
 const AdminPage = () => {
   const [reports, setReports] = useState([]);
@@ -30,6 +32,41 @@ const AdminPage = () => {
     open: false,
     reportId: null
   });
+  const [visuallyUpdated, setVisuallyUpdated] = useState({});
+  const navigate = useNavigate();
+
+  // Get completed reports from localStorage
+  const getCompletedReports = () => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.error("Error reading from localStorage", e);
+      return [];
+    }
+  };
+
+  // Save a completed report to localStorage
+  const saveCompletedReport = (report) => {
+    try {
+      const completedReports = getCompletedReports();
+      const reportWithTimestamp = {
+        ...report,
+        completedAt: new Date().toISOString()
+      };
+      
+      // Check if already exists
+      if (!completedReports.some(r => r.id === report.id)) {
+        const updated = [...completedReports, reportWithTimestamp];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      }
+      
+      return reportWithTimestamp;
+    } catch (e) {
+      console.error("Error saving to localStorage", e);
+      return report;
+    }
+  };
 
   useEffect(() => {
     fetchReports();
@@ -47,18 +84,30 @@ const AdminPage = () => {
       let inProgress = 0;
       let completed = 0;
       
+      // Get locally completed reports
+      const completedReports = getCompletedReports();
+      const completedIds = new Set(completedReports.map(r => r.id));
+      
       querySnapshot.forEach((doc) => {
+        // Store both the Firestore document ID and the report's internal ID if it exists
         const reportData = { 
-          id: doc.id,
-          firestoreId: doc.id,
+          id: doc.id,  // This is the Firestore document ID
+          firestoreId: doc.id, // Store explicitly for clarity
           ...doc.data() 
         };
         
         console.log("Fetched report:", reportData.id, "with data:", reportData);
         
+        // Check if report is in completed list
+        if (completedIds.has(reportData.id)) {
+          const completedReport = completedReports.find(r => r.id === reportData.id);
+          reportData.status = 'completed';
+          reportData.completedAt = completedReport.completedAt;
+        }
+        
         reportsData.push(reportData);
         
-        // Count by status
+        // Count by status (after applying local completed status)
         if (reportData.status === 'pending') pending++;
         else if (reportData.status === 'in-progress') inProgress++;
         else if (reportData.status === 'completed') completed++;
@@ -93,41 +142,33 @@ const AdminPage = () => {
     setSnackbar({...snackbar, open: false});
   };
 
-  const handleUpdateStatus = async (reportId, newStatus) => {
+  const handleMarkAsCompleted = (reportId) => {
     try {
       setUpdatingReport(reportId);
       
-      // Get the current report data first to ensure we maintain all fields
+      // Get the current report data
       const report = reports.find(r => r.id === reportId);
       if (!report) {
         throw new Error("Report not found");
       }
       
-      // Use the Firestore document ID, not the report's internal ID
-      const firestoreDocId = report.firestoreId || report.id;
-      console.log("Firestore Document ID:", firestoreDocId);
+      // Mark as visually completed immediately
+      setVisuallyUpdated(prev => ({
+        ...prev,
+        [reportId]: 'completed'
+      }));
       
-      const reportRef = doc(db, 'emergencyReports', firestoreDocId);
-      
-      // Create update data with only the fields that should change
-      const updateData = { 
-        status: newStatus,
-      };
-      
-      // Add completion timestamp if marking as completed
-      if (newStatus === 'completed') {
-        updateData.completedAt = new Date().toISOString();
-      }
-      
-      console.log("Updating report with Firestore ID:", firestoreDocId, "with data:", updateData);
-      
-      // Update the document with only the changed fields
-      await updateDoc(reportRef, updateData);
+      // Save to localStorage
+      const completedReport = saveCompletedReport(report);
       
       // Update local state
       const updatedReports = reports.map(r => {
         if (r.id === reportId) {
-          return { ...r, ...updateData };
+          return { 
+            ...r, 
+            status: 'completed',
+            completedAt: completedReport.completedAt
+          };
         }
         return r;
       });
@@ -135,50 +176,41 @@ const AdminPage = () => {
       setReports(updatedReports);
       
       // Update statistics
-      const newStats = { ...stats };
-      
-      // Find current report to get its previous status
-      if (report) {
-        const oldStatus = report.status;
-        
-        // Decrement old status count
-        if (oldStatus === 'pending') newStats.pending--;
-        else if (oldStatus === 'in-progress') newStats.inProgress--;
-        else if (oldStatus === 'completed') newStats.completed--;
-        
-        // Increment new status count
-        if (newStatus === 'pending') newStats.pending++;
-        else if (newStatus === 'in-progress') newStats.inProgress++;
-        else if (newStatus === 'completed') newStats.completed++;
-      }
-      
-      setStats(newStats);
+      setStats(prev => ({
+        ...prev,
+        pending: prev.pending - (report.status === 'pending' ? 1 : 0),
+        inProgress: prev.inProgress - (report.status === 'in-progress' ? 1 : 0),
+        completed: prev.completed + 1
+      }));
       
       // Update selected report if in dialog
       if (selectedReport && selectedReport.id === reportId) {
-        setSelectedReport({ ...selectedReport, ...updateData });
+        setSelectedReport({ 
+          ...selectedReport, 
+          status: 'completed',
+          completedAt: completedReport.completedAt
+        });
       }
       
-      // Show success dialog if report was marked as completed
-      if (newStatus === 'completed') {
-        setSuccessDialog({
-          open: true,
-          reportId: reportId
-        });
-      } else {
-        // Otherwise just show a snackbar
-        setSnackbar({
-          open: true,
-          message: `Report marked as ${newStatus}`,
-          severity: 'success'
-        });
-      }
+      // Show success dialog
+      setSuccessDialog({
+        open: true,
+        reportId: reportId
+      });
       
     } catch (error) {
-      console.error("Error updating report status:", error, "for report ID:", reportId);
+      console.error("Error marking report as completed:", error);
+      
+      // Revert visual update
+      setVisuallyUpdated(prev => {
+        const newState = { ...prev };
+        delete newState[reportId];
+        return newState;
+      });
+      
       setSnackbar({
         open: true,
-        message: `Failed to update report status: ${error.message}`,
+        message: `Failed to mark as completed: ${error.message}`,
         severity: 'error'
       });
     } finally {
@@ -199,7 +231,16 @@ const AdminPage = () => {
     });
   };
 
-  const getStatusChip = (status) => {
+  const getEffectiveStatus = (report) => {
+    if (visuallyUpdated[report.id]) {
+      return visuallyUpdated[report.id];
+    }
+    return report.status;
+  };
+
+  const getStatusChip = (report) => {
+    const status = typeof report === 'string' ? report : getEffectiveStatus(report);
+    
     switch (status) {
       case 'pending':
         return <Chip label="Pending" color="warning" size="small" />;
@@ -214,9 +255,9 @@ const AdminPage = () => {
 
   const renderActionButtons = (report) => {
     const isUpdating = updatingReport === report.id;
-    const reportFirestoreId = report.firestoreId || report.id;
+    const effectiveStatus = getEffectiveStatus(report);
     
-    if (report.status === 'completed') {
+    if (effectiveStatus === 'completed') {
       return (
         <Stack direction="row" spacing={1}>
           <Button 
@@ -244,7 +285,7 @@ const AdminPage = () => {
           size="small" 
           variant="contained"
           color="success"
-          onClick={() => handleUpdateStatus(reportFirestoreId, 'completed')}
+          onClick={() => handleMarkAsCompleted(report.id)}
           disabled={isUpdating}
         >
           Service Provided
@@ -267,6 +308,11 @@ const AdminPage = () => {
   // Add a function to find the report by ID
   const getReportById = (reportId) => {
     return reports.find(r => r.id === reportId);
+  };
+
+  // Navigate to completed page
+  const handleViewCompletedReports = () => {
+    navigate('/admin/completed');
   };
 
   return (
@@ -354,7 +400,14 @@ const AdminPage = () => {
                 </TableHead>
                 <TableBody>
                   {reports.map((report) => (
-                    <TableRow key={report.id} hover>
+                    <TableRow 
+                      key={report.id} 
+                      hover
+                      sx={visuallyUpdated[report.id] === 'completed' ? { 
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        transition: 'background-color 0.5s ease' 
+                      } : {}}
+                    >
                       <TableCell>
                         {report.reportId ? 
                           report.reportId.substring(0, 8) + '...' : 
@@ -364,7 +417,7 @@ const AdminPage = () => {
                       <TableCell>{report.name || 'Anonymous'}</TableCell>
                       <TableCell>{formatDate(report.timestamp)}</TableCell>
                       <TableCell>{report.location || 'Unknown'}</TableCell>
-                      <TableCell>{getStatusChip(report.status)}</TableCell>
+                      <TableCell>{getStatusChip(report)}</TableCell>
                       <TableCell>
                         {renderActionButtons(report)}
                       </TableCell>
@@ -399,7 +452,11 @@ const AdminPage = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="textSecondary">Status</Typography>
-                  <Typography variant="body1" gutterBottom>{getStatusChip(selectedReport.status)}</Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {visuallyUpdated[selectedReport.id] ? 
+                      getStatusChip(visuallyUpdated[selectedReport.id]) : 
+                      getStatusChip(selectedReport.status)}
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="textSecondary">Emergency Type</Typography>
@@ -436,13 +493,12 @@ const AdminPage = () => {
               </Grid>
             </DialogContent>
             <DialogActions>
-              {selectedReport.status !== 'completed' && (
+              {(selectedReport.status !== 'completed' && !visuallyUpdated[selectedReport.id]) && (
                 <Button 
                   color="success" 
                   variant="contained"
                   onClick={() => {
-                    const firestoreId = selectedReport.firestoreId || selectedReport.id;
-                    handleUpdateStatus(firestoreId, 'completed');
+                    handleMarkAsCompleted(selectedReport.id);
                     setDialogOpen(false);
                   }}
                   disabled={updatingReport === selectedReport.id}
@@ -525,14 +581,7 @@ const AdminPage = () => {
         </DialogContent>
         <DialogActions>
           <Button 
-            component={Link} 
-            to={{ 
-              pathname: "/admin/completed",
-              state: { 
-                fromServiceProvided: true,
-                reportId: successDialog.reportId 
-              }
-            }} 
+            onClick={handleViewCompletedReports}
             color="primary"
             variant="outlined"
           >

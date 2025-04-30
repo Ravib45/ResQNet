@@ -5,9 +5,10 @@ import {
   Card, CardContent, Grid, Button, Dialog, DialogActions,
   DialogContent, DialogTitle, Snackbar, Alert, Fade
 } from '@mui/material';
-import { collection, query, getDocs, orderBy, where } from 'firebase/firestore';
-import { db } from '../firebase';
 import { useLocation } from 'react-router-dom';
+
+// Use the same localStorage key as in AdminPage
+const LOCAL_STORAGE_KEY = 'resqnet_completed_reports';
 
 const CompletedReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -39,36 +40,37 @@ const CompletedReportsPage = () => {
     fetchCompletedReports();
   }, []);
 
-  const fetchCompletedReports = async () => {
+  const fetchCompletedReports = () => {
     try {
       setLoading(true);
-      const reportsRef = collection(db, 'emergencyReports');
       
-      // Create a query for reports with 'completed' status
-      const q = query(
-        reportsRef,
-        where('status', '==', 'completed'),
-        orderBy('timestamp', 'desc')
-      );
+      // Get completed reports from localStorage
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      let completedReports = [];
       
-      const querySnapshot = await getDocs(q);
+      if (stored) {
+        completedReports = JSON.parse(stored);
+      }
       
-      const completedReports = [];
+      // Sort by completion date (newest first)
+      completedReports.sort((a, b) => {
+        const dateA = a.completedAt ? new Date(a.completedAt) : new Date(0);
+        const dateB = b.completedAt ? new Date(b.completedAt) : new Date(0);
+        return dateB - dateA;
+      });
+      
       const newlyCompleted = [];
       
       // Get current time for checking recently completed reports (within last hour)
       const oneHourAgo = new Date();
       oneHourAgo.setHours(oneHourAgo.getHours() - 1);
       
-      querySnapshot.forEach((doc) => {
-        const reportData = { id: doc.id, ...doc.data() };
-        completedReports.push(reportData);
-        
-        // Check if the report was completed recently
-        if (reportData.completedAt) {
-          const completedTime = new Date(reportData.completedAt);
+      // Mark reports completed in the last hour
+      completedReports.forEach(report => {
+        if (report.completedAt) {
+          const completedTime = new Date(report.completedAt);
           if (completedTime > oneHourAgo) {
-            newlyCompleted.push(reportData.id);
+            newlyCompleted.push(report.id);
           }
         }
       });
@@ -100,14 +102,30 @@ const CompletedReportsPage = () => {
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown';
     
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      let date;
+      if (timestamp.toDate) {
+        // For Firestore timestamps
+        date = timestamp.toDate();
+      } else if (typeof timestamp === 'string') {
+        // For ISO string dates
+        date = new Date(timestamp);
+      } else {
+        // For other formats
+        date = new Date(timestamp);
+      }
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return 'Invalid date';
+    }
   };
 
   const getStatusChip = (status) => {
@@ -137,13 +155,7 @@ const CompletedReportsPage = () => {
   // Get completed date in a readable format
   const getCompletedDate = (report) => {
     if (!report.completedAt) return 'Unknown';
-    return new Date(report.completedAt).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatDate(report.completedAt);
   };
 
   // Check if report was recently completed

@@ -330,6 +330,7 @@ const Navbar = () => {
                 )}
 
                 {/* Emergency button for mobile */}
+                {!isAdmin && (
                 <ListItem 
                     button 
                     component={Link}
@@ -351,6 +352,7 @@ const Navbar = () => {
                     </Box>
                     <ListItemText primary="Report Emergency" />
                 </ListItem>
+                )}
             </List>
             <Divider />
             <List>
@@ -714,6 +716,7 @@ const Navbar = () => {
                             )}
 
                             {/* Report Emergency Button */}
+                            {!isAdmin && (
                             <Button
                                 component={Link}
                                 to="/report-emergency"
@@ -742,6 +745,7 @@ const Navbar = () => {
                             >
                                 Report Emergency
                             </Button>
+                            )}
 
                             {/* Auth Section */}
                             <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>

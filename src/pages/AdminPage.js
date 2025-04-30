@@ -3,15 +3,23 @@ import {
   Box, Typography, Container, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Chip, CircularProgress,
   Card, CardContent, Grid, Button, Dialog, DialogActions,
-  DialogContent, DialogTitle, Snackbar, Alert, Stack
+  DialogContent, DialogTitle, Snackbar, Alert, Stack, useTheme, alpha
 } from '@mui/material';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
+import ReportIcon from '@mui/icons-material/Report';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PendingIcon from '@mui/icons-material/Pending';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DoneIcon from '@mui/icons-material/Done';
+import CloseIcon from '@mui/icons-material/Close';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 const LOCAL_STORAGE_KEY = 'resqnet_completed_reports';
 
 const AdminPage = () => {
+  const theme = useTheme();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -52,6 +60,7 @@ const AdminPage = () => {
       const completedReports = getCompletedReports();
       const reportWithTimestamp = {
         ...report,
+        status: 'completed',
         completedAt: new Date().toISOString()
       };
       
@@ -64,7 +73,7 @@ const AdminPage = () => {
       return reportWithTimestamp;
     } catch (e) {
       console.error("Error saving to localStorage", e);
-      return report;
+      return { ...report, status: 'completed' };
     }
   };
 
@@ -95,8 +104,6 @@ const AdminPage = () => {
           firestoreId: doc.id, // Store explicitly for clarity
           ...doc.data() 
         };
-        
-        console.log("Fetched report:", reportData.id, "with data:", reportData);
         
         // Check if report is in completed list
         if (completedIds.has(reportData.id)) {
@@ -158,8 +165,11 @@ const AdminPage = () => {
         [reportId]: 'completed'
       }));
       
-      // Save to localStorage
-      const completedReport = saveCompletedReport(report);
+      // Save to localStorage with forced completed status
+      const completedReport = saveCompletedReport({
+        ...report,
+        status: 'completed' // Force status to completed in both places
+      });
       
       // Update local state
       const updatedReports = reports.map(r => {
@@ -199,15 +209,14 @@ const AdminPage = () => {
       });
       
     } catch (error) {
-      console.error("Error marking report as completed:", error);
-      
-      // Revert visual update
+      // If error occurs, revert the visual update
       setVisuallyUpdated(prev => {
         const newState = { ...prev };
         delete newState[reportId];
         return newState;
       });
       
+      console.error("Error marking report as completed:", error);
       setSnackbar({
         open: true,
         message: `Failed to mark as completed: ${error.message}`,
@@ -243,13 +252,30 @@ const AdminPage = () => {
     
     switch (status) {
       case 'pending':
-        return <Chip label="Pending" color="warning" size="small" />;
+        return <Chip 
+          label="Pending" 
+          color="warning" 
+          size="small" 
+          icon={<PendingIcon />}
+          sx={{ fontWeight: 'bold', pl: 0.5 }}
+        />;
       case 'in-progress':
-        return <Chip label="In Progress" color="primary" size="small" />;
+        return <Chip 
+          label="In Progress" 
+          color="primary" 
+          size="small" 
+          sx={{ fontWeight: 'bold' }}
+        />;
       case 'completed':
-        return <Chip label="Completed" color="success" size="small" />;
+        return <Chip 
+          label="Completed" 
+          color="success" 
+          size="small" 
+          icon={<CheckCircleIcon />}
+          sx={{ fontWeight: 'bold', pl: 0.5 }}
+        />;
       default:
-        return <Chip label={status || 'Unknown'} size="small" />;
+        return <Chip label="Unknown" size="small" />;
     }
   };
 
@@ -259,25 +285,30 @@ const AdminPage = () => {
     
     if (effectiveStatus === 'completed') {
       return (
-        <Stack direction="row" spacing={1}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button 
             size="small" 
             variant="outlined"
+            color="primary"
+            startIcon={<VisibilityIcon />}
             onClick={() => handleViewReport(report)}
+            sx={{ borderRadius: 2 }}
           >
             View
           </Button>
-        </Stack>
+        </Box>
       );
     }
     
     return (
-      <Stack direction="row" spacing={1}>
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <Button 
           size="small" 
           variant="outlined"
+          color="primary"
+          startIcon={<VisibilityIcon />}
           onClick={() => handleViewReport(report)}
-          disabled={isUpdating}
+          sx={{ borderRadius: 2 }}
         >
           View
         </Button>
@@ -285,16 +316,17 @@ const AdminPage = () => {
           size="small" 
           variant="contained"
           color="success"
+          startIcon={<DoneIcon />}
           onClick={() => handleMarkAsCompleted(report.id)}
           disabled={isUpdating}
+          sx={{ borderRadius: 2 }}
         >
           Service Provided
         </Button>
-      </Stack>
+      </Box>
     );
   };
 
-  // Format emergencyType for display
   const formatEmergencyType = (type) => {
     if (!type) return 'Unknown';
     
@@ -305,69 +337,153 @@ const AdminPage = () => {
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  // Add a function to find the report by ID
   const getReportById = (reportId) => {
     return reports.find(r => r.id === reportId);
   };
 
-  // Navigate to completed page
   const handleViewCompletedReports = () => {
-    navigate('/admin/completed');
+    navigate('/completed-reports');
   };
 
+  const handleCloseSuccessDialog = () => {
+    setSuccessDialog({
+      open: false,
+      reportId: null
+    });
+  };
+
+  // Dashboard background
+  const dashboardBg = "https://images.unsplash.com/photo-1530882550103-1a50b9a4a6ae?q=80&w=2070&auto=format&fit=crop";
+
   return (
-    <Box sx={{ pt: 10, pb: 6, minHeight: '100vh' }}>
+    <Box 
+      sx={{ 
+        pt: 10, 
+        pb: 6, 
+        minHeight: '100vh',
+        background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${dashboardBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <Container maxWidth="lg">
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Emergency Reports Dashboard
-          </Typography>
+        <Paper 
+          elevation={6} 
+          sx={{ 
+            p: 4, 
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+            <AssessmentIcon sx={{ fontSize: 36, mr: 2, color: theme.palette.primary.main }} />
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              fontWeight="bold"
+              sx={{
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Emergency Reports
+            </Typography>
+          </Box>
           
           {/* Stats Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ bgcolor: '#f5f5f5' }}>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Total Reports
-                  </Typography>
-                  <Typography variant="h4" component="div">
+              <Card sx={{ 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-5px)'
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <ReportIcon sx={{ color: theme.palette.grey[700], fontSize: 32, mr: 1 }} />
+                    <Typography color="textSecondary" fontWeight="medium">
+                      Total Reports
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" component="div" fontWeight="bold">
                     {stats.total}
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
+            
             <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ bgcolor: '#fff8e1' }}>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Pending
-                  </Typography>
-                  <Typography variant="h4" component="div" color="warning.main">
+              <Card sx={{ 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                background: alpha(theme.palette.warning.main, 0.1),
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-5px)'
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PendingIcon sx={{ color: theme.palette.warning.main, fontSize: 32, mr: 1 }} />
+                    <Typography color="textSecondary" fontWeight="medium">
+                      Pending
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" component="div" fontWeight="bold" color="warning.main">
                     {stats.pending}
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
+            
             <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ bgcolor: '#e3f2fd' }}>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    In Progress
-                  </Typography>
-                  <Typography variant="h4" component="div" color="primary.main">
+              <Card sx={{ 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                background: alpha(theme.palette.primary.main, 0.1),
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-5px)'
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PendingIcon sx={{ color: theme.palette.primary.main, fontSize: 32, mr: 1 }} />
+                    <Typography color="textSecondary" fontWeight="medium">
+                      In Progress
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" component="div" fontWeight="bold" color="primary.main">
                     {stats.inProgress}
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
+            
             <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ bgcolor: '#e8f5e9' }}>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
-                    Completed
-                  </Typography>
-                  <Typography variant="h4" component="div" color="success.main">
+              <Card sx={{ 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                background: alpha(theme.palette.success.main, 0.1),
+                transition: 'transform 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-5px)'
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <CheckCircleIcon sx={{ color: theme.palette.success.main, fontSize: 32, mr: 1 }} />
+                    <Typography color="textSecondary" fontWeight="medium">
+                      Completed
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" component="div" fontWeight="bold" color="success.main">
                     {stats.completed}
                   </Typography>
                 </CardContent>
@@ -377,237 +493,302 @@ const AdminPage = () => {
           
           {/* Reports Table */}
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress />
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
+              <CircularProgress size={60} thickness={4} />
             </Box>
           ) : reports.length === 0 ? (
-            <Typography variant="body1" sx={{ textAlign: 'center', p: 4 }}>
-              No emergency reports found.
-            </Typography>
+            <Box sx={{ 
+              textAlign: 'center', 
+              p: 6, 
+              borderRadius: 3, 
+              border: `2px dashed ${alpha(theme.palette.text.secondary, 0.2)}`,
+              bgcolor: alpha(theme.palette.background.paper, 0.5),
+            }}>
+              <Typography variant="h6" color="text.secondary" sx={{ fontStyle: 'italic', mb: 2 }}>
+                No emergency reports found.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                New emergency reports will appear here when submitted by users.
+              </Typography>
+            </Box>
           ) : (
-            <TableContainer component={Paper} elevation={2}>
+            <TableContainer 
+              component={Paper} 
+              elevation={3}
+              sx={{ 
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}
+            >
               <Table>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: 'grey.100' }}>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Reported By</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Actions</TableCell>
+                  <TableRow sx={{ bgcolor: theme.palette.primary.main }}>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Type</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>User</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Time</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Location</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
+                    <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {reports.map((report) => (
-                    <TableRow 
-                      key={report.id} 
-                      hover
-                      sx={visuallyUpdated[report.id] === 'completed' ? { 
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        transition: 'background-color 0.5s ease' 
-                      } : {}}
-                    >
-                      <TableCell>
-                        {report.reportId ? 
-                          report.reportId.substring(0, 8) + '...' : 
-                          report.id.substring(0, 8) + '...'}
-                      </TableCell>
-                      <TableCell>{formatEmergencyType(report.emergencyType)}</TableCell>
-                      <TableCell>{report.name || 'Anonymous'}</TableCell>
-                      <TableCell>{formatDate(report.timestamp)}</TableCell>
-                      <TableCell>{report.location || 'Unknown'}</TableCell>
-                      <TableCell>{getStatusChip(report)}</TableCell>
-                      <TableCell>
-                        {renderActionButtons(report)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {reports.map((report) => {
+                    const effectiveStatus = getEffectiveStatus(report);
+                    return (
+                      <TableRow 
+                        key={report.id} 
+                        hover
+                        sx={{
+                          bgcolor: effectiveStatus === 'completed' 
+                            ? alpha(theme.palette.success.main, 0.05)
+                            : 'inherit',
+                          '&:nth-of-type(odd)': {
+                            backgroundColor: effectiveStatus === 'completed'
+                              ? alpha(theme.palette.success.light, 0.1)
+                              : alpha(theme.palette.primary.main, 0.03),
+                          },
+                        }}
+                      >
+                        <TableCell sx={{ fontWeight: 'medium' }}>
+                          {report.id.substring(0, 8)}...
+                        </TableCell>
+                        <TableCell>
+                          {formatEmergencyType(report.emergencyType)}
+                        </TableCell>
+                        <TableCell>
+                          {report.name || 'Anonymous'}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(report.timestamp)}
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 200 }}>
+                          <Typography noWrap>
+                            {report.location || 'Unknown'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusChip(report)}
+                        </TableCell>
+                        <TableCell>
+                          {renderActionButtons(report)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
           )}
+          
+          {/* View Report Dialog */}
+          <Dialog 
+            open={dialogOpen} 
+            onClose={() => setDialogOpen(false)}
+            maxWidth="md"
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+                p: 1
+              }
+            }}
+          >
+            {selectedReport && (
+              <>
+                <DialogTitle 
+                  sx={{ 
+                    bgcolor: getEffectiveStatus(selectedReport) === 'completed' ? theme.palette.success.main : theme.palette.primary.main,
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderRadius: '12px 12px 0 0',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <ReportIcon sx={{ mr: 1 }} />
+                    Emergency Report Details
+                  </Box>
+                  {getStatusChip(selectedReport)}
+                </DialogTitle>
+                
+                <DialogContent dividers sx={{ p: 3 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Report ID
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {selectedReport.id}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Emergency Type
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {formatEmergencyType(selectedReport.emergencyType)}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Reported By
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {selectedReport.name || 'Anonymous'}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Contact Number
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {selectedReport.phone || 'N/A'}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Reported On
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {formatDate(selectedReport.timestamp)}
+                      </Typography>
+                    </Grid>
+                    
+                    {selectedReport.status === 'completed' && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          Completed On
+                        </Typography>
+                        <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium', color: theme.palette.success.main }}>
+                          {formatDate(selectedReport.completedAt)}
+                        </Typography>
+                      </Grid>
+                    )}
+                    
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Location
+                      </Typography>
+                      <Typography variant="body1" gutterBottom sx={{ fontWeight: 'medium' }}>
+                        {selectedReport.location || 'Unknown'}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Description
+                      </Typography>
+                      <Paper 
+                        variant="outlined" 
+                        sx={{ 
+                          p: 2, 
+                          mt: 1, 
+                          bgcolor: alpha(theme.palette.background.paper, 0.5),
+                          borderRadius: 2
+                        }}
+                      >
+                        <Typography variant="body1">
+                          {selectedReport.description || 'No description provided.'}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                
+                <DialogActions sx={{ p: 2 }}>
+                  <Button 
+                    startIcon={<CloseIcon />}
+                    onClick={() => setDialogOpen(false)} 
+                    variant="outlined"
+                    color="inherit"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Close
+                  </Button>
+                  
+                  {getEffectiveStatus(selectedReport) !== 'completed' && (
+                    <Button 
+                      startIcon={<DoneIcon />}
+                      onClick={() => {
+                        handleMarkAsCompleted(selectedReport.id);
+                        setDialogOpen(false);
+                      }} 
+                      variant="contained"
+                      color="success"
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Mark as Completed
+                    </Button>
+                  )}
+                </DialogActions>
+              </>
+            )}
+          </Dialog>
+          
+          {/* Success Dialog */}
+          <Dialog
+            open={successDialog.open}
+            onClose={handleCloseSuccessDialog}
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+                p: 1
+              }
+            }}
+          >
+            <DialogTitle 
+              sx={{ 
+                bgcolor: theme.palette.success.main, 
+                color: 'white',
+                borderRadius: '12px 12px 0 0',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <CheckCircleIcon sx={{ mr: 1 }} />
+              Service Successfully Provided
+            </DialogTitle>
+            <DialogContent sx={{ pt: 3, pb: 2 }}>
+              <Typography variant="body1">
+                The emergency report has been marked as completed. Thank you for providing the service!
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ p: 2 }}>
+              <Button 
+                onClick={handleCloseSuccessDialog}
+                variant="outlined"
+                color="success"
+                sx={{ borderRadius: 2 }}
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
+          
+          {/* Snackbar for notifications */}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert 
+              onClose={handleCloseSnackbar} 
+              severity={snackbar.severity} 
+              variant="filled"
+              sx={{ width: '100%', boxShadow: 3 }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
         </Paper>
       </Container>
-      
-      {/* Report Details Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        {selectedReport && (
-          <>
-            <DialogTitle>
-              Emergency Report Details
-            </DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">ID</Typography>
-                  <Typography variant="body1" gutterBottom>
-                    {selectedReport.reportId || selectedReport.id}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Status</Typography>
-                  <Typography variant="body1" gutterBottom>
-                    {visuallyUpdated[selectedReport.id] ? 
-                      getStatusChip(visuallyUpdated[selectedReport.id]) : 
-                      getStatusChip(selectedReport.status)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Emergency Type</Typography>
-                  <Typography variant="body1" gutterBottom>{formatEmergencyType(selectedReport.emergencyType)}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Reported On</Typography>
-                  <Typography variant="body1" gutterBottom>{formatDate(selectedReport.timestamp)}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Reported By</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.name || 'Anonymous'}</Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Contact</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.contactNumber || 'Not provided'}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="textSecondary">Location</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.location || 'Unknown'}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="textSecondary">Description</Typography>
-                  <Typography variant="body1" gutterBottom>
-                    {selectedReport.description || 'No description provided'}
-                  </Typography>
-                </Grid>
-                {selectedReport.completedAt && (
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="subtitle2" color="textSecondary">Completed On</Typography>
-                    <Typography variant="body1" gutterBottom>{new Date(selectedReport.completedAt).toLocaleString()}</Typography>
-                  </Grid>
-                )}
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              {(selectedReport.status !== 'completed' && !visuallyUpdated[selectedReport.id]) && (
-                <Button 
-                  color="success" 
-                  variant="contained"
-                  onClick={() => {
-                    handleMarkAsCompleted(selectedReport.id);
-                    setDialogOpen(false);
-                  }}
-                  disabled={updatingReport === selectedReport.id}
-                >
-                  Mark Service Provided
-                </Button>
-              )}
-              <Button onClick={() => setDialogOpen(false)}>Close</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
-      
-      {/* Service Provided Success Dialog */}
-      <Dialog
-        open={successDialog.open}
-        onClose={() => setSuccessDialog({ open: false, reportId: null })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ bgcolor: 'success.light', color: 'white' }}>
-          Service Provided Successfully
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
-            <Box sx={{ 
-              width: 80, 
-              height: 80, 
-              borderRadius: '50%', 
-              bgcolor: 'success.light', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              mb: 2
-            }}>
-              <Typography variant="h3" color="white">✓</Typography>
-            </Box>
-            <Typography variant="h6" gutterBottom align="center">
-              Emergency Service Successfully Provided
-            </Typography>
-            <Typography variant="body1" align="center" color="text.secondary" paragraph>
-              The emergency report has been marked as completed and moved to the Completed tab.
-            </Typography>
-            {successDialog.reportId && (
-              <Box sx={{ mt: 2, width: '100%' }}>
-                <Paper elevation={1} sx={{ p: 2, bgcolor: 'grey.50' }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Report Details:
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        ID: {
-                          (getReportById(successDialog.reportId)?.reportId || 
-                          successDialog.reportId.substring(0, 8) + '...')
-                        }
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Type: {getReportById(successDialog.reportId) && 
-                              formatEmergencyType(getReportById(successDialog.reportId).emergencyType)}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Reported By: {getReportById(successDialog.reportId)?.name || 'Anonymous'}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">
-                        Status: <Chip label="Completed" color="success" size="small" />
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Paper>
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={handleViewCompletedReports}
-            color="primary"
-            variant="outlined"
-          >
-            View in Completed Reports
-          </Button>
-          <Button 
-            onClick={() => setSuccessDialog({ open: false, reportId: null })}
-            variant="contained"
-            color="primary"
-          >
-            Continue
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* Snackbar for notifications */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

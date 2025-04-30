@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Container, Paper, Grid, Card, CardContent, CardMedia,
-  Button, CircularProgress, Chip, Divider, CardActions
+  Button, CircularProgress, Chip, Divider, CardActions, useTheme, alpha
 } from '@mui/material';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link } from 'react-router-dom';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import FireTruckIcon from '@mui/icons-material/FireTruck';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+
+// Same localStorage key used across the admin pages
+const LOCAL_STORAGE_KEY = 'resqnet_completed_reports';
 
 const AdminHomePage = () => {
+  const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [serviceStats, setServiceStats] = useState({
     police: { total: 0, pending: 0, recent: [] },
@@ -21,6 +27,17 @@ const AdminHomePage = () => {
   useEffect(() => {
     fetchServiceReports();
   }, []);
+
+  // Get completed reports from localStorage
+  const getCompletedReportsFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.error("Error reading completed reports from localStorage:", e);
+      return [];
+    }
+  };
 
   const fetchServiceReports = async () => {
     try {
@@ -60,6 +77,10 @@ const AdminHomePage = () => {
       
       const querySnapshot = await getDocs(q);
       
+      // Get completed reports from localStorage
+      const completedReports = getCompletedReportsFromStorage();
+      const completedReportIds = completedReports.map(report => report.id);
+      
       let allReports = [];
       let pendingCount = 0;
       
@@ -73,9 +94,19 @@ const AdminHomePage = () => {
         
         // Check if any of the emergency types match the current type
         if (emergencyTypes.some(et => et && et.toLowerCase().includes(type.toLowerCase()))) {
-          allReports.push(report);
+          // Check if report is completed (in localStorage)
+          const isCompleted = completedReportIds.includes(report.id);
           
-          if (report.status === 'pending') {
+          // Update report status based on localStorage
+          const updatedReport = {
+            ...report,
+            status: isCompleted ? 'completed' : 'pending'
+          };
+          
+          allReports.push(updatedReport);
+          
+          // Count as pending only if not in completed reports
+          if (!isCompleted) {
             pendingCount++;
           }
         }
@@ -83,8 +114,6 @@ const AdminHomePage = () => {
       
       // Get the 3 most recent reports
       const recentReports = allReports.slice(0, 3);
-      
-      console.log(`${type} reports:`, allReports.length, allReports);
       
       return {
         total: allReports.length,
@@ -132,22 +161,35 @@ const AdminHomePage = () => {
   const getStatusChip = (status) => {
     switch (status) {
       case 'pending':
-        return <Chip label="Pending" color="warning" size="small" />;
+        return <Chip label="Pending" color="warning" size="small" sx={{ fontWeight: 'bold' }} />;
       case 'in-progress':
-        return <Chip label="In Progress" color="primary" size="small" />;
+        return <Chip label="In Progress" color="primary" size="small" sx={{ fontWeight: 'bold' }} />;
       case 'completed':
-        return <Chip label="Completed" color="success" size="small" />;
+        return <Chip label="Completed" color="success" size="small" sx={{ fontWeight: 'bold' }} />;
       default:
         return <Chip label="Unknown" size="small" />;
     }
   };
 
   const renderServiceCard = (title, iconComponent, color, bgImage, stats, linkTo) => (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card 
+      sx={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        borderRadius: 3,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: '0 12px 28px rgba(0,0,0,0.18)'
+        }
+      }}
+    >
       <CardMedia
         component="div"
         sx={{
-          height: 140,
+          height: 160,
           backgroundColor: color,
           display: 'flex',
           alignItems: 'center',
@@ -163,48 +205,63 @@ const AdminHomePage = () => {
             backgroundImage: `url(${bgImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            opacity: 0.3,
+            opacity: 0.5,
           }
         }}
       >
         <Box sx={{ position: 'relative', textAlign: 'center', color: 'white' }}>
           {iconComponent}
-          <Typography variant="h5" component="div" fontWeight="bold" sx={{ mt: 1 }}>
+          <Typography variant="h5" component="div" fontWeight="bold" sx={{ mt: 1, textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
             {title}
           </Typography>
         </Box>
       </CardMedia>
       
-      <CardContent>
-        <Grid container spacing={2} sx={{ mb: 2 }}>
+      <CardContent sx={{ p: 3, flexGrow: 1 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={6}>
-            <Typography variant="body2" color="text.secondary">
-              Total Reports
-            </Typography>
-            <Typography variant="h5">
-              {stats.total}
-            </Typography>
+            <Box sx={{ 
+              p: 1.5, 
+              bgcolor: alpha(theme.palette.primary.main, 0.1), 
+              borderRadius: 2,
+              textAlign: 'center' 
+            }}>
+              <Typography variant="body2" color="text.secondary" fontWeight="medium" gutterBottom>
+                Total Reports
+              </Typography>
+              <Typography variant="h4" fontWeight="bold">
+                {stats.total}
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="body2" color="text.secondary">
-              Pending
-            </Typography>
-            <Typography variant="h5" color="warning.main">
-              {stats.pending}
-            </Typography>
+            <Box sx={{ 
+              p: 1.5, 
+              bgcolor: alpha(theme.palette.warning.main, 0.1), 
+              borderRadius: 2,
+              textAlign: 'center' 
+            }}>
+              <Typography variant="body2" color="text.secondary" fontWeight="medium" gutterBottom>
+                Pending
+              </Typography>
+              <Typography variant="h4" fontWeight="bold" color="warning.main">
+                {stats.pending}
+              </Typography>
+            </Box>
           </Grid>
         </Grid>
         
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+          <AssessmentIcon sx={{ mr: 1, color: color }} />
           Recent Reports
         </Typography>
         
         {stats.recent.length > 0 ? (
           stats.recent.map((report, index) => (
             <Box key={report.id} sx={{ mb: 1 }}>
-              {index > 0 && <Divider sx={{ my: 1 }} />}
+              {index > 0 && <Divider sx={{ my: 1.5 }} />}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2" noWrap sx={{ maxWidth: '60%' }}>
+                <Typography variant="body2" noWrap sx={{ maxWidth: '60%', fontWeight: 'medium' }}>
                   {report.name || 'Anonymous'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -225,21 +282,27 @@ const AdminHomePage = () => {
             </Box>
           ))
         ) : (
-          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', p: 2 }}>
             No recent reports
           </Typography>
         )}
       </CardContent>
       
-      <Box sx={{ flexGrow: 1 }} />
-      
-      <CardActions>
+      <CardActions sx={{ p: 2, pt: 0 }}>
         <Button 
-          size="small" 
+          size="medium" 
+          variant="contained"
           color="primary" 
           component={Link} 
           to={linkTo}
-          sx={{ ml: 'auto' }}
+          sx={{ 
+            ml: 'auto', 
+            borderRadius: 2,
+            bgcolor: color,
+            '&:hover': {
+              bgcolor: alpha(color, 0.8)
+            }
+          }}
         >
           View All
         </Button>
@@ -247,21 +310,55 @@ const AdminHomePage = () => {
     </Card>
   );
 
-  const policeImage = "https://images.pexels.com/photos/4600666/pexels-photo-4600666.jpeg?auto=compress&cs=tinysrgb&w=1500";
-  const medicalImage = "https://images.pexels.com/photos/6862365/pexels-photo-6862365.jpeg?auto=compress&cs=tinysrgb&w=1500";
-  const fireImage = "https://images.pexels.com/photos/6012007/pexels-photo-6012007.jpeg?auto=compress&cs=tinysrgb&w=1500";
+  // Better quality images
+  const policeImage = "https://images.unsplash.com/photo-1543523195-ea140fe6b9bb?q=80&w=2070&auto=format&fit=crop";
+  const medicalImage = "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop";
+  const fireImage = "https://images.unsplash.com/photo-1599692392262-37fa67248f04?q=80&w=2070&auto=format&fit=crop";
+
+  // Dashboard background
+  const dashboardBg = "https://images.unsplash.com/photo-1530882550103-1a50b9a4a6ae?q=80&w=2070&auto=format&fit=crop";
 
   return (
-    <Box sx={{ pt: 10, pb: 6, minHeight: '100vh' }}>
+    <Box 
+      sx={{ 
+        pt: 10, 
+        pb: 6, 
+        minHeight: '100vh',
+        background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${dashboardBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <Container maxWidth="lg">
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Emergency Services Overview
-          </Typography>
+        <Paper 
+          elevation={6} 
+          sx={{ 
+            p: 4, 
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+            <DashboardIcon sx={{ fontSize: 36, mr: 2, color: theme.palette.primary.main }} />
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              fontWeight="bold"
+              sx={{
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Emergency Services Overview
+            </Typography>
+          </Box>
           
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress />
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
+              <CircularProgress size={60} thickness={4} />
             </Box>
           ) : (
             <Grid container spacing={4} sx={{ mt: 2 }}>
